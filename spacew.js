@@ -4,8 +4,11 @@ Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
+Bangle.setUI = print;
 WIDGETS = [];
 g = Graphics.createSDL(1024, 768, 8);
+g.setColor(1,1,1);
+g.fillRect(0, 0, 1024, 768);
 
 function sdl_poll() {
     e = g.getPixel(0, 0);
