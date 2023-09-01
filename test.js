@@ -17,12 +17,12 @@ g.drawString("Vector maps", 85,55);
 s = require("http").createServer(print);
 s.listen(8080);
 
-function foo() {
+function sdl_poll() {
     e = g.getPixel(0, 0);
     if (e) {
 	type = g.getPixel(1, 0);
 	switch(type) {
-	case 2: print("...key down"); break;
+	case 2: print("...key down", g.getPixel(2, 0)); break;
 	case 3: print("...key up"); break;
 	case 4: print("...move"); break;
 	case 5: print("...mouse down", g.getPixel(5,0), g.getPixel(6.0)); break;
@@ -35,4 +35,4 @@ function foo() {
 }
 
 print("Test being loaded");
-setInterval(foo, 10);
+setInterval(sdl_poll, 10);
