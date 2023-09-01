@@ -43,7 +43,7 @@ chip = {
   'family' : "LINUX",
   'package' : "",
   'ram' : 0,
-  'flash' : 256, # size of file used to fake flash memory (kb)
+  'flash' : 8196, # size of file used to fake flash memory (kb)
   'speed' : -1,
   'usart' : 6,
   'spi' : 3,

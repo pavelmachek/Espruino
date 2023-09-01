@@ -1,1 +1,6 @@
 bin/espruino ./test.js
+
+jde udelat
+fs = require('fs');
+d = fs.readFile("delme.mtar");
+write("delme.mtar", d);
