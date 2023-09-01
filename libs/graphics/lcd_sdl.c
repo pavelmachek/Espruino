@@ -49,17 +49,22 @@ static unsigned int SDL_Backdoor(JsGraphics *gfx, int x) {
   static SDL_Event event;
   switch (x) {
   case 0: return SDL_PollEvent(&event);
+  case 1: return event.type;
+    //  case 2: return (int) event.key.keysym.keycode;
+  case 3: return (int) event.button.button;
+  case 4: return (int) event.button.state;
+  case 5: return (int) event.button.x;
+  case 6: return (int) event.button.y;
   }
-
 }
 
 unsigned int lcdGetPixel_SDL(JsGraphics *gfx, int x, int y) {
-  printf("getPixel of %d, %d\n", x, y); fflush(stdout);  
+  //printf("getPixel of %d, %d\n", x, y); fflush(stdout);  
   if (!screen) return 0;
   if(SDL_MUSTLOCK(screen))
       if(SDL_LockSurface(screen) < 0) return 0;
   if (y==0) {
-    printf("Backdoor\n"); fflush(stdout);
+    //printf("Backdoor\n"); fflush(stdout);
     return SDL_Backdoor(gfx, x);
   }
   unsigned int *pixmem32 = ((unsigned int*)screen->pixels) + y*gfx->data.width + x;

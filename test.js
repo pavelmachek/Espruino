@@ -18,9 +18,11 @@ s = require("http").createServer(print);
 s.listen(8080);
 
 function foo() {
-    print("bar");
+    e = g.getPixel(0, 0);
+    if (e) {
+	print("...type:", g.getPixel(1, 0));
+    }
 }
 
 print("Test being loaded");
-print("GetPixel:", g.getPixel(12, 34));
-setInterval(foo, 2000);
+setInterval(foo, 10);
