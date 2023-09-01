@@ -1,14 +1,24 @@
 /* original openstmap.js */
 
+function project_fun(x) {
+    r = {};
+    r.x = x.lon * 20;
+    r.y = x.lat * 20;
+    return r;
+}
+
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
 Bangle.setUI = print;
+Bangle.appRect = [0, 0, 1024, 768 ];
+Bangle.project = project_fun;
 WIDGETS = [];
 g = Graphics.createSDL(1024, 768, 8);
 g.setColor(1,1,1);
 g.fillRect(0, 0, 1024, 768);
+g.flip = print;
 
 function sdl_poll() {
     e = g.getPixel(0, 0);
@@ -815,4 +825,5 @@ m.lon = 14.759;
 
 initVector();
 introScreen();
-emptyMap();
+//emptyMap();
+showMap();
