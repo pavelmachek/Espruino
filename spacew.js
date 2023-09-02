@@ -1,5 +1,21 @@
 /* original openstmap.js */
 
+function banglejs_project(latlong) {
+  let degToRad = Math.PI / 180; // degree to radian conversion              
+  let latMax = 85.0511287798; // clip latitude to sane values          
+  let R = 6378137; // earth radius in m                                
+  let lat = latlong.lat;
+  let lon = latlong.lon;
+  if (lat > latMax) lat=latMax;
+  if (lat < -latMax) lat=-latMax;
+  let s = Math.sin(lat * degToRad);
+  let o = {}
+  o.x = R * lon * degToRad;
+  o.y = R * Math.log((1 + s) / (1 - s)) / 2;
+  print("Project", latlong, o);    
+  return o;
+}
+
 function project_fun(x) {
     r = {};
     r.x = x.lon * 20;
@@ -13,7 +29,7 @@ Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
 Bangle.setUI = print;
 Bangle.appRect = [0, 0, 1024, 768 ];
-Bangle.project = project_fun;
+Bangle.project = banglejs_project;
 WIDGETS = [];
 g = Graphics.createSDL(1024, 768, 8);
 g.setColor(1,1,1);
@@ -357,7 +373,7 @@ R = Bangle.appRect;
 
 function showMap() {
   mapVisible = true;
-  g.reset().clearRect(R);
+  g.reset().setColor(1,1,1).clearRect(R);
   redraw(0);
   emptyMap();
 }
@@ -729,6 +745,7 @@ function fname(lon, lat, zoom) {
 function fnames(zoom) {
     var bb = [m.lon, m.lat, m.lon, m.lat];
     var r = xyz(bb, zoom, false, "WGS84");
+    print("Getting names...");
     while (1) {
       var bb2 = bbox(r.minX, r.minY, zoom, false, "WGS84");
       var os = m.latLonToXY(bb2[3], bb2[0]);
@@ -762,6 +779,7 @@ function getZoom(qual) {
   return z;
 }
 function drawDebug(text, perc) {
+  print(text);
   g.setClipRect(0,0,R.x2,R.y);
   g.reset();
   g.setColor(1,1,1).fillRect(0,0,R.x2,R.y);
@@ -809,7 +827,7 @@ function initVector() {
 }
 
 function introScreen() {
-  g.reset().clearRect(R);
+  g.reset().setColor(1,1,1).clearRect(R);
   g.setColor(0,0,0).setFont("Vector",25);
   g.setFontAlign(0,0);
   g.drawString("SpaceWeaver", 85,35);
