@@ -1,4 +1,4 @@
-/* original openstmap.js */
+// --- Linux - Bangle glue
 
 function banglejs_project(latlong) {
   let degToRad = Math.PI / 180; // degree to radian conversion              
@@ -16,25 +16,45 @@ function banglejs_project(latlong) {
   return o;
 }
 
-function project_fun(x) {
-    r = {};
-    r.x = x.lon * 20;
-    r.y = x.lat * 20;
-    return r;
+var banglejs_on_map = {}
+
+function banglejs_on(event, callback) {
+  banglejs_on_map[event] = callback;
+}
+
+function banglejs_setUI(map) {
+  if (map.drag) {
+    banglejs_on_map['drag'] = map.drag;
+  }
 }
 
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
-Bangle.setUI = print;
+Bangle.setUI =  banglejs_setUI;
 Bangle.appRect = [0, 0, 1024, 768 ];
 Bangle.project = banglejs_project;
+Bangle.on = banglejs_on;
 WIDGETS = [];
 g = Graphics.createSDL(1024, 768, 8);
 g.setColor(1,1,1);
 g.fillRect(0, 0, 1024, 768);
 g.flip = print;
+
+function sdl_drag(is_down) {
+  let drag = {}
+  drag.b = is_down;
+  drag.x = g.getPixel(5,0);
+  drag.y = g.getPixel(6.0);
+  print("...mouse down", drag.x, drag.y);
+  let d = banglejs_on_map['drag'];
+  if (d) {
+    d(drag);
+  }
+}
+
+var sdl_is_down = false;
 
 function sdl_poll() {
     e = g.getPixel(0, 0);
@@ -45,10 +65,17 @@ function sdl_poll() {
 	    break;
 	case 2: print("...key down", g.getPixel(2, 0)); break;
 	case 3: print("...key up"); break;
-	case 4: // print("...move");
+	case 4:
+	    if (sdl_is_down) {
+		print("...move");
+		sdl_drag(true);
+	    }
 	    break;
-	case 5: print("...mouse down", g.getPixel(5,0), g.getPixel(6.0)); break;
-	case 6: print("...mouse up"); break;
+	case 5:
+	    sdl_is_down = true;
+	    sdl_drag(true);
+	    break;
+	case 6: sdl_is_down = false; sdl_drag(false); print("...mouse up"); break;
 	case 12: print("...exit"); break;
 	default: print("...type:", type); break;
 	}
@@ -58,6 +85,10 @@ function sdl_poll() {
 print("Test being loaded");
 setInterval(sdl_poll, 10);
 
+// --- end glue
+
+
+/* original openstmap.js */
 /* OpenStreetMap plotting module.
 
 Usage:
