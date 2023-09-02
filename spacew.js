@@ -41,9 +41,12 @@ function sdl_poll() {
     if (e) {
 	type = g.getPixel(1, 0);
 	switch(type) {
+	case 1: //print("...window in?");
+	    break;
 	case 2: print("...key down", g.getPixel(2, 0)); break;
 	case 3: print("...key up"); break;
-	case 4: print("...move"); break;
+	case 4: // print("...move");
+	    break;
 	case 5: print("...mouse down", g.getPixel(5,0), g.getPixel(6.0)); break;
 	case 6: print("...mouse up"); break;
 	case 12: print("...exit"); break;
