@@ -871,7 +871,7 @@ function introScreen() {
 }
 
 
-m.scale = 76;
+m.scale = 70000;
 m.lat = 50.001;
 m.lon = 14.759;
 
