@@ -56,6 +56,13 @@ function sdl_drag(is_down) {
 
 var sdl_is_down = false;
 
+function sdl_key(key) {
+    switch(key) {
+    case 65:
+	break;
+    }
+}
+
 function sdl_poll() {
     e = g.getPixel(0, 0);
     if (e) {
@@ -63,7 +70,11 @@ function sdl_poll() {
 	switch(type) {
 	case 1: //print("...window in?");
 	    break;
-	case 2: print("...key down", g.getPixel(2, 0)); break;
+	case 2:
+	    let key = g.getPixel(2, 0);
+	    print("...key down", key);
+	    sdl_key(key);
+	    break;
 	case 3: print("...key up"); break;
 	case 4:
 	    if (sdl_is_down) {
@@ -212,4 +223,16 @@ const st = require('Storage');
 const hs = require('heatshrink');
 
 introScreen();
-emptyMap();
+if (0) {
+  var menu = {"":{title:"Benchmark"},
+	    "< Back": ()=> showMap(),
+	    /*LANG*/"Run": () =>{
+		showMap();
+	    }};
+  E.showMenu(menu);
+} else {
+  emptyMap();
+}
+
+
+

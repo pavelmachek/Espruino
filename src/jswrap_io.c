@@ -18,6 +18,7 @@
 #include "jswrap_arraybuffer.h" // for jswrap_io_peek
 #include "jswrapper.h" // for JSWAT_VOID
 #include "jstimer.h" // for digitalPulse
+#include <stdio.h>
 
 #ifdef ESP32
 #include "freertos/FreeRTOS.h"
@@ -121,6 +122,10 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
   // hack for ESP8266/ESP32 where the address can be different
   size_t mappedAddr = jshFlashGetMemMapAddress((size_t)addr);
+  printf("io_peek %x %x %x\n", addr, count, wordSize);
+  fflush(stdout);
+  return jsvNewFromLongInteger((long long)0x42);
+  
   if (count<=1) {
     return jsvNewFromLongInteger((long long)_jswrap_io_peek(mappedAddr, wordSize));
   } else {
