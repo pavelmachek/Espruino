@@ -111,6 +111,10 @@ Write 32 bits of memory at the given location - VERY DANGEROUS!
  */
 
 uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
+  printf("io_peek %x %x\n", addr, wordSize);
+  fflush(stdout);
+  return 1337;
+	
   if (wordSize==1) return READ_FLASH_UINT8((char*)addr);
   if (wordSize==2) {
     return READ_FLASH_UINT8((char*)addr) | (uint32_t)(READ_FLASH_UINT8((char*)(addr+1)) << 8);
@@ -122,10 +126,6 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
   // hack for ESP8266/ESP32 where the address can be different
   size_t mappedAddr = jshFlashGetMemMapAddress((size_t)addr);
-  printf("io_peek %x %x %x\n", addr, count, wordSize);
-  fflush(stdout);
-  return jsvNewFromLongInteger((long long)0x42);
-  
   if (count<=1) {
     return jsvNewFromLongInteger((long long)_jswrap_io_peek(mappedAddr, wordSize));
   } else {
@@ -148,6 +148,10 @@ JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 }
 
 void _jswrap_io_poke(JsVarInt addr, uint32_t data, int wordSize) {
+  printf("io_poke %x %x %x\n", addr, data, wordSize);
+  fflush(stdout);
+  return 1337;
+	
   if (wordSize==1) (*(unsigned char*)(size_t)addr) = (unsigned char)data;
   else if (wordSize==2) (*(unsigned short*)(size_t)addr) = (unsigned short)data;
   else if (wordSize==4) (*(unsigned int*)(size_t)addr) = (unsigned int)data;
