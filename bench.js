@@ -111,13 +111,7 @@ function emptyMap() {
       g.reset().clearRect(R);
       redraw();    
   }, btn: btn=>{
-    mapVisible = false;
-    var menu = {"":{title:"Benchmark"},
-    "< Back": ()=> showMap(),
-    /*LANG*/"Run": () =>{
-      showMap();
-    }};
-    E.showMenu(menu);
+    print("Button pressed");
   }});
 }
 
@@ -125,16 +119,8 @@ const st = require('Storage');
 const hs = require('heatshrink');
 
 introScreen();
-if (0) {
-  var menu = {"":{title:"Benchmark"},
-	    "< Back": ()=> showMap(),
-	    /*LANG*/"Run": () =>{
-		showMap();
-	    }};
-  E.showMenu(menu);
-} else {
-  emptyMap();
-}
+emptyMap();
+
 
 
 
