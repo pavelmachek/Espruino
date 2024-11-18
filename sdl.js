@@ -22,11 +22,17 @@ function banglejs_on(event, callback) {
   banglejs_on_map[event] = callback;
 }
 
+function banglejs_setUI(map) {
+  if (map.drag) {
+    banglejs_on_map['drag'] = map.drag;
+  }
+}
+
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
-Bangle.setUI = print;
+Bangle.setUI =  banglejs_setUI;
 Bangle.appRect = [0, 0, 1024, 768 ];
 Bangle.project = banglejs_project;
 Bangle.on = banglejs_on;
@@ -36,18 +42,26 @@ g.setColor(1,1,1);
 g.fillRect(0, 0, 1024, 768);
 g.flip = print;
 
-function sdl_drag() {
-	    let drag = {}
-	    drag.x = g.getPixel(5,0);
-	    drag.y = g.getPixel(6.0);
-	    print("...mouse down", drag.x, drag.y);
-	    let d = banglejs_on_map['drag'];
-	    if (d) {
-		d(drag);
-	    }
+function sdl_drag(is_down) {
+  let drag = {}
+  drag.b = is_down;
+  drag.x = g.getPixel(5,0);
+  drag.y = g.getPixel(6.0);
+  print("...mouse down", drag.x, drag.y);
+  let d = banglejs_on_map['drag'];
+  if (d) {
+    d(drag);
+  }
 }
 
 var sdl_is_down = false;
+
+function sdl_key(key) {
+    switch(key) {
+    case 65:
+	break;
+    }
+}
 
 function sdl_poll() {
     e = g.getPixel(0, 0);
@@ -56,19 +70,23 @@ function sdl_poll() {
 	switch(type) {
 	case 1: //print("...window in?");
 	    break;
-	case 2: print("...key down", g.getPixel(2, 0)); break;
+	case 2:
+	    let key = g.getPixel(2, 0);
+	    print("...key down", key);
+	    sdl_key(key);
+	    break;
 	case 3: print("...key up"); break;
 	case 4:
 	    if (sdl_is_down) {
 		print("...move");
-		sdl_drag();
+		sdl_drag(true);
 	    }
 	    break;
 	case 5:
 	    sdl_is_down = true;
-	    sdl_drag();
+	    sdl_drag(true);
 	    break;
-	case 6: sdl_is_down = false; print("...mouse up"); break;
+	case 6: sdl_is_down = false; sdl_drag(false); print("...mouse up"); break;
 	case 12: print("...exit"); break;
 	default: print("...type:", type); break;
 	}
