@@ -42,7 +42,8 @@ g.setColor(1,1,1);
 g.fillRect(0, 0, 1024, 768);
 g.flip = print;
 
-function backdoor(x, y) { return g.getPixel(x, 0); }
+function backdoor(x, y) { return peek8(x); }
+//function backdoor(x, y) { return g.getPixel(x, 0); }
 
 function sdl_drag(is_down) {
   let drag = {}

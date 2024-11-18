@@ -56,6 +56,8 @@ unsigned int SDL_Backdoor(int x) {
   case 5: return (int) event.button.x;
   case 6: return (int) event.button.y;
   }
+  printf("Bad backdoor call %d\n", x); fflush(stdout);
+  return -1;
 }
 
 unsigned int lcdGetPixel_SDL(JsGraphics *gfx, int x, int y) {

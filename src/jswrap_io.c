@@ -25,6 +25,8 @@
 #include "freertos/task.h"
 #endif
 
+extern unsigned int SDL_Backdoor(int x);
+
 /*JSON{
   "type"          : "function",
   "name"          : "peek8",
@@ -109,15 +111,7 @@ Read 32 bits of memory at the given location - DANGEROUS!
 }
 Write 32 bits of memory at the given location - VERY DANGEROUS!
  */
-
-extern unsigned int SDL_Backdoor(int x);
-
 uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
-	/* HERE */
-  printf("io_peek %x %x\n", addr, wordSize);
-  fflush(stdout);
-  return SDL_Backdoor(addr);
-	
   if (wordSize==1) return READ_FLASH_UINT8((char*)addr);
   if (wordSize==2) {
     return READ_FLASH_UINT8((char*)addr) | (uint32_t)(READ_FLASH_UINT8((char*)(addr+1)) << 8);
@@ -127,6 +121,12 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 }
 
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
+	/* HERE */
+	if (wordSize != 1) return ~0;
+	uint32_t ret = SDL_Backdoor(addr);
+	//printf("io_peek %x %x -> %x\n", addr, wordSize, ret);  fflush(stdout);
+	return jsvNewFromLongInteger(ret);
+	
   // hack for ESP8266/ESP32 where the address can be different
   size_t mappedAddr = jshFlashGetMemMapAddress((size_t)addr);
   if (count<=1) {
