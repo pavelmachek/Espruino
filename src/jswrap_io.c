@@ -110,10 +110,13 @@ Read 32 bits of memory at the given location - DANGEROUS!
 Write 32 bits of memory at the given location - VERY DANGEROUS!
  */
 
+extern unsigned int SDL_Backdoor(int x);
+
 uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
+	/* HERE */
   printf("io_peek %x %x\n", addr, wordSize);
   fflush(stdout);
-  return 1337;
+  return SDL_Backdoor(addr);
 	
   if (wordSize==1) return READ_FLASH_UINT8((char*)addr);
   if (wordSize==2) {
@@ -148,6 +151,7 @@ JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 }
 
 void _jswrap_io_poke(JsVarInt addr, uint32_t data, int wordSize) {
+	/* HERE */
   printf("io_poke %x %x %x\n", addr, data, wordSize);
   fflush(stdout);
   return 1337;

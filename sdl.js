@@ -42,11 +42,13 @@ g.setColor(1,1,1);
 g.fillRect(0, 0, 1024, 768);
 g.flip = print;
 
+function backdoor(x, y) { return g.getPixel(x, 0); }
+
 function sdl_drag(is_down) {
   let drag = {}
   drag.b = is_down;
-  drag.x = g.getPixel(5,0);
-  drag.y = g.getPixel(6.0);
+  drag.x = backdoor(5,0);
+  drag.y = backdoor(6.0);
   print("...mouse down", drag.x, drag.y);
   let d = banglejs_on_map['drag'];
   if (d) {
@@ -64,14 +66,14 @@ function sdl_key(key) {
 }
 
 function sdl_poll() {
-    e = g.getPixel(0, 0);
+    e = backdoor(0, 0);
     if (e) {
-	type = g.getPixel(1, 0);
+	type = backdoor(1, 0);
 	switch(type) {
 	case 1: //print("...window in?");
 	    break;
 	case 2:
-	    let key = g.getPixel(2, 0);
+	    let key = backdoor(2, 0);
 	    print("...key down", key);
 	    sdl_key(key);
 	    break;
