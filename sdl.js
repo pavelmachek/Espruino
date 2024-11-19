@@ -28,19 +28,23 @@ function banglejs_setUI(map) {
   }
 }
 
+function initWindow(x, y) {
+  Bangle.appRect = [ 0, 0, x, y ];
+  g = Graphics.createSDL(x, y, 8);
+  g.setColor(1,1,1);
+  g.fillRect(0, 0, x, y);
+  g.flip = print;
+}
+
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
 Bangle.setUI =  banglejs_setUI;
-Bangle.appRect = [0, 0, 1024, 768 ];
 Bangle.project = banglejs_project;
 Bangle.on = banglejs_on;
 WIDGETS = [];
-g = Graphics.createSDL(1024, 768, 8);
-g.setColor(1,1,1);
-g.fillRect(0, 0, 1024, 768);
-g.flip = print;
+initWindow(1024, 768);
 
 function backdoor(x, y) { return peek8(x); }
 //function backdoor(x, y) { return g.getPixel(x, 0); }
