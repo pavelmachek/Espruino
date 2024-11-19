@@ -45,28 +45,9 @@ uint32_t palette_web[256] = {
     0xff9900,0xff9933,0xff9966,0xff9999,0xff99cc,0xff99ff,0xffcc00,0xffcc33,0xffcc66,0xffcc99,0xffcccc,
     0xffccff,0xffff00,0xffff33,0xffff66,0xffff99,0xffffcc,0xffffff};
 
-unsigned int SDL_Backdoor(int x) {
-  static SDL_Event event;
-  switch (x) {
-  case 0: return SDL_PollEvent(&event);
-  case 1: return event.type;
-  case 2: return (int) event.key.keysym.scancode;
-  case 3: return (int) event.button.button;
-  case 4: return (int) event.button.state;
-  case 5: return (int) event.button.x;
-  case 6: return (int) event.button.y;
-  }
-  printf("Bad backdoor call %d\n", x); fflush(stdout);
-  return -1;
-}
 
 unsigned int lcdGetPixel_SDL(JsGraphics *gfx, int x, int y) {
-  //printf("getPixel of %d, %d\n", x, y); fflush(stdout);  
   if (!screen) return 0;
-  if (y==0) {
-    //printf("Backdoor\n"); fflush(stdout);
-    return SDL_Backdoor(x);
-  }
   if(SDL_MUSTLOCK(screen))
       if(SDL_LockSurface(screen) < 0) return 0;
   unsigned int *pixmem32 = ((unsigned int*)screen->pixels) + y*gfx->data.width + x;

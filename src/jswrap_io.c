@@ -25,7 +25,23 @@
 #include "freertos/task.h"
 #endif
 
-extern unsigned int SDL_Backdoor(int x);
+// FIXME #ifdef ...
+#include <SDL/SDL.h>
+
+unsigned int SDL_Backdoor(int x) {
+  static SDL_Event event;
+  switch (x) {
+  case 0: return SDL_PollEvent(&event);
+  case 1: return event.type;
+  case 2: return (int) event.key.keysym.scancode;
+  case 3: return (int) event.button.button;
+  case 4: return (int) event.button.state;
+  case 5: return (int) event.button.x;
+  case 6: return (int) event.button.y;
+  }
+  printf("Bad backdoor call %d\n", x); fflush(stdout);
+  return -1;
+}
 
 /*JSON{
   "type"          : "function",

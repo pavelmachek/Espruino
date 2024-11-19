@@ -72,7 +72,7 @@ function sdl_key(key) {
 
 function sdl_poll() {
   e = backdoor(0, 0);
-  if (e) {
+  while (e) {
     type = backdoor(1, 0);
     switch(type) {
     case 1: //print("...window in?");
@@ -97,6 +97,7 @@ function sdl_poll() {
     case 12: print("...exit"); quit(); break;
     default: print("...type:", type); break;
     }
+    e = backdoor(0, 0);
   }
 }
 
