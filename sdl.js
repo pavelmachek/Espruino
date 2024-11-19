@@ -64,40 +64,40 @@ function sdl_drag(is_down) {
 var sdl_is_down = false;
 
 function sdl_key(key) {
-    switch(key) {
-    case 65:
-	break;
-    }
+  switch(key) {
+  case 65:
+    break;
+  }
 }
 
 function sdl_poll() {
-    e = backdoor(0, 0);
-    if (e) {
-	type = backdoor(1, 0);
-	switch(type) {
-	case 1: //print("...window in?");
-	    break;
-	case 2:
-	    let key = backdoor(2, 0);
-	    print("...key down", key);
-	    sdl_key(key);
-	    break;
-	case 3: print("...key up"); break;
-	case 4:
-	    if (sdl_is_down) {
-		print("...move");
-		sdl_drag(true);
-	    }
-	    break;
-	case 5:
-	    sdl_is_down = true;
-	    sdl_drag(true);
-	    break;
-	case 6: sdl_is_down = false; sdl_drag(false); print("...mouse up"); break;
-	case 12: print("...exit"); quit(); break;
-	default: print("...type:", type); break;
-	}
+  e = backdoor(0, 0);
+  if (e) {
+    type = backdoor(1, 0);
+    switch(type) {
+    case 1: //print("...window in?");
+      break;
+    case 2:
+      let key = backdoor(2, 0);
+      print("...key down", key);
+      sdl_key(key);
+      break;
+    case 3: print("...key up"); break;
+    case 4:
+      if (sdl_is_down) {
+	print("...move");
+	sdl_drag(true);
+      }
+      break;
+    case 5:
+      sdl_is_down = true;
+      sdl_drag(true);
+      break;
+    case 6: sdl_is_down = false; sdl_drag(false); print("...mouse up"); break;
+    case 12: print("...exit"); quit(); break;
+    default: print("...type:", type); break;
     }
+  }
 }
 
 print("Test being loaded");
