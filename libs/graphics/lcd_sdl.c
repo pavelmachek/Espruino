@@ -86,6 +86,7 @@ void lcdInit_SDL(JsGraphics *gfx) {
     SDL_Quit();
     exit(1);
   }
+  SDL_WM_SetCaption("Espruino", NULL);
 }
 
 void lcdIdle_SDL() {

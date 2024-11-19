@@ -25,10 +25,10 @@
 #include "freertos/task.h"
 #endif
 
-// FIXME #ifdef ...
+#ifdef USE_LCD_SDL
 #include <SDL/SDL.h>
 
-unsigned int SDL_Backdoor(int x) {
+static unsigned int SDL_Backdoor(int x) {
   static SDL_Event event;
   switch (x) {
   case 0: return SDL_PollEvent(&event);
@@ -42,6 +42,7 @@ unsigned int SDL_Backdoor(int x) {
   printf("Bad backdoor call %d\n", x); fflush(stdout);
   return -1;
 }
+#endif
 
 /*JSON{
   "type"          : "function",
@@ -137,12 +138,13 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 }
 
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
+#ifdef USE_LCD_SDL
 	/* HERE */
 	if (wordSize != 1) return ~0;
 	uint32_t ret = SDL_Backdoor(addr);
 	//printf("io_peek %x %x -> %x\n", addr, wordSize, ret);  fflush(stdout);
 	return jsvNewFromLongInteger(ret);
-	
+#endif
   // hack for ESP8266/ESP32 where the address can be different
   size_t mappedAddr = jshFlashGetMemMapAddress((size_t)addr);
   if (count<=1) {
