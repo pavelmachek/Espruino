@@ -90,7 +90,7 @@ function sdl_poll() {
 	    sdl_drag(true);
 	    break;
 	case 6: sdl_is_down = false; sdl_drag(false); print("...mouse up"); break;
-	case 12: print("...exit"); break;
+	case 12: print("...exit"); quit(); break;
 	default: print("...type:", type); break;
 	}
     }
