@@ -133,7 +133,7 @@ function introScreen() {
   g.drawString("Press button", 85,55);
 
   for (i=0; i<8; i++) {
-    print(palette[i]);
+//    print(palette[i]);
     g.setColor(palette[i].hex);
     g.fillRect(100*i, 100, 100*i+90, 200);
   }
@@ -156,9 +156,8 @@ function emptyMap() {
   }});
 }
 
+Bangle.on('key', print);
+
 introScreen();
 emptyMap();
-
-
-
 

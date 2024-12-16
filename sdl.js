@@ -1,6 +1,6 @@
 // --- Linux - Bangle glue
 
-function banglejs_project(latlong) {
+function bangle_project(latlong) {
   let degToRad = Math.PI / 180; // degree to radian conversion              
   let latMax = 85.0511287798; // clip latitude to sane values          
   let R = 6378137; // earth radius in m                                
@@ -16,15 +16,15 @@ function banglejs_project(latlong) {
   return o;
 }
 
-var banglejs_on_map = {}
+var bangle_on_map = {}
 
-function banglejs_on(event, callback) {
-  banglejs_on_map[event] = callback;
+function bangle_on(event, callback) {
+  bangle_on_map[event] = callback;
 }
 
-function banglejs_setUI(map) {
+function bangle_setUI(map) {
   if (map.drag) {
-    banglejs_on_map['drag'] = map.drag;
+    bangle_on_map['drag'] = map.drag;
   }
 }
 
@@ -40,9 +40,9 @@ Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
-Bangle.setUI =  banglejs_setUI;
-Bangle.project = banglejs_project;
-Bangle.on = banglejs_on;
+Bangle.setUI =  bangle_setUI;
+Bangle.project = bangle_project;
+Bangle.on = bangle_on;
 WIDGETS = [];
 initWindow(1024, 768);
 
@@ -55,7 +55,7 @@ function sdl_drag(is_down) {
   drag.x = backdoor(5,0);
   drag.y = backdoor(6.0);
   print("...mouse down", drag.x, drag.y);
-  let d = banglejs_on_map['drag'];
+  let d = bangle_on_map['drag'];
   if (d) {
     d(drag);
   }
@@ -67,6 +67,10 @@ function sdl_key(key) {
   switch(key) {
   case 65:
     break;
+  }
+  let d = bangle_on_map['key'];
+  if (d) {
+    d(key);
   }
 }
 
