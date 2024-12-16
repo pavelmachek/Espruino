@@ -146,35 +146,35 @@ function linearDiff(inputLinear, closestPrimary) {
 }
 
 var best = hexToLinearRGB("#ffffff");
-function bestBlack(_, sum, i) {
+function bestBlack(sum, i, len) {
   let s1 = best.r + best.g + best.b;
   let s2 = sum.r  + sum.g  + sum.b;
+  let lim = len * 0.04;
+  
+  if (Math.abs(sum.r - sum.g) > lim) return;
+  if (Math.abs(sum.b - sum.g) > lim) return;
 
   if (s1 > s2) {
     best = sum;
-    print("New best", i, sum);
+    print("New best", i, sum, Math.abs(sum.b - sum.g));
   }
 }
 
-function callWithAverages(lin, sum, i, len, f) {
-  let sub = i<<3;
-  if (len == 0)
-    return f(lin, sum, i);
 
-  for (let i=0; i<8; i++) {
-    let s = linearAdd(sum, palette[i].l);
-    callWithAverages(lin, s, sub | i, len-1, f);
+function getPattern(len) {
+  for (let i=0; i < 1<<(3*len); i++) {
+    let sum = hexToLinearRGB("#000000");
+    let k = i;
+    for (let j=0; j < len; j++) {
+      sum = linearAdd(sum, palette[k & 7].l);
+      k >>= 3;
+    }
+    bestBlack(sum, i, len);
   }
-}
-
-function getPattern(lin, len) {
-  let sum = hexToLinearRGB("#000000");
-  callWithAverages(lin, sum, 0, len, bestBlack);
 }
 
 print("Recursion test");
-getPattern(hexToLinearRGB("#000000"), 2);
-  
+getPattern(4);
 
 function introScreen() {
   g.reset().clearRect(R);
