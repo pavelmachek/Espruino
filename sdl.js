@@ -30,7 +30,7 @@ function bangle_setUI(map) {
 
 function initWindow(x, y) {
   Bangle.appRect = [ 0, 0, x, y ];
-  g = Graphics.createSDL(x, y, 8);
+  g = Graphics.createSDL(x, y, 16);
   g.setColor(1,1,1);
   g.fillRect(0, 0, x, y);
   g.flip = print;

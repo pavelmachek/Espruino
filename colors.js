@@ -120,7 +120,7 @@ const palette = [
   { originalHex: "#00ffff", hex: "#7ea581" }, // Sage Green
   { originalHex: "#ff0000", hex: "#9d6868" }, // Red
   { originalHex: "#ff00ff", hex: "#897593" }, // Muted Mauve
-  { originalHex: "#ffff00", hex: "#cdd5bc" }, // Sage Gray
+  { originalHex: "#ffff00", hex: "#cdd5bc" }, // Sage Gray  -- spis #e7f5bf
   { originalHex: "#ffffff", hex: "#dff6c0" }  // White
 ];
 
@@ -156,7 +156,28 @@ function emptyMap() {
   }});
 }
 
-Bangle.on('key', print);
+function adjust() {
+  let i = 8;
+  let h = hsvToHex(color.h, color.s, color.v);
+  print(color, h);
+  g.setColor(h);
+  g.fillRect(100*i, 100, 100*i+90, 200);
+}
+
+var color = { h: 86, s: 22, v: 96 }
+
+function on_key(val) {
+  if (val == 24) { color.h += 1; }
+  if (val == 25) { color.s += 1; }
+  if (val == 26) { color.v += 1; }
+  
+  if (val == 38) { color.h -= 1; }
+  if (val == 39) { color.s -= 1; }
+  if (val == 40) { color.v -= 1; }
+  adjust();
+}
+
+Bangle.on('key', on_key);
 
 introScreen();
 emptyMap();
