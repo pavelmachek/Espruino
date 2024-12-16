@@ -124,6 +124,48 @@ const palette = [
   { originalHex: "#ffffff", hex: "#dff6c0" }  // White
 ];
 
+for (i=0; i<8; i++) {
+  palette[i].l = hexToLinearRGB(palette[i].hex);
+  print(hexToHsv(palette[i].hex));
+}
+
+function linearAdd(inputLinear, closestPrimary) {
+  return {
+        r: inputLinear.r + closestPrimary.r,
+        g: inputLinear.g + closestPrimary.g,
+        b: inputLinear.b + closestPrimary.b
+    };
+}
+
+function linearDiff(inputLinear, closestPrimary) {
+  return {
+        r: inputLinear.r - closestPrimary.r,
+        g: inputLinear.g - closestPrimary.g,
+        b: inputLinear.b - closestPrimary.b
+    };
+}
+
+function callWithAverages(lin, sum, i, len, f) {
+  let sub = i<<3;
+  if (len == 0)
+    return f(lin, sum, i);
+
+  for (let i=0; i<8; i++) {
+    print(i);
+    let s = linearAdd(sum, palette[i].l);
+    callWithAverages(lin, s, sub | i, len-1, f);
+  }
+}
+
+function getPattern(lin, len) {
+  let sum = hexToLinearRGB("#000000");
+  callWithAverages(lin, sum, 0, len, print);
+}
+
+print("Recursion test");
+getPattern(hexToLinearRGB("#000000"), 1);
+  
+
 function introScreen() {
   g.reset().clearRect(R);
   g.setColor(0,0,0).setFont("Vector",25);
@@ -137,11 +179,6 @@ function introScreen() {
     g.setColor(palette[i].hex);
     g.fillRect(100*i, 100, 100*i+90, 200);
   }
-}
-
-for (i=0; i<8; i++) {
-  palette[i].l = hexToLinearRGB(palette[i].hex);
-  print(hexToHsv(palette[i].hex));
 }
 
 function redraw() {
