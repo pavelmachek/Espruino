@@ -145,13 +145,23 @@ function linearDiff(inputLinear, closestPrimary) {
     };
 }
 
+var best = hexToLinearRGB("#ffffff");
+function bestBlack(_, sum, i) {
+  let s1 = best.r + best.g + best.b;
+  let s2 = sum.r  + sum.g  + sum.b;
+
+  if (s1 > s2) {
+    best = sum;
+    print("New best", i, sum);
+  }
+}
+
 function callWithAverages(lin, sum, i, len, f) {
   let sub = i<<3;
   if (len == 0)
     return f(lin, sum, i);
 
   for (let i=0; i<8; i++) {
-    print(i);
     let s = linearAdd(sum, palette[i].l);
     callWithAverages(lin, s, sub | i, len-1, f);
   }
@@ -159,11 +169,11 @@ function callWithAverages(lin, sum, i, len, f) {
 
 function getPattern(lin, len) {
   let sum = hexToLinearRGB("#000000");
-  callWithAverages(lin, sum, 0, len, print);
+  callWithAverages(lin, sum, 0, len, bestBlack);
 }
 
 print("Recursion test");
-getPattern(hexToLinearRGB("#000000"), 1);
+getPattern(hexToLinearRGB("#000000"), 2);
   
 
 function introScreen() {
