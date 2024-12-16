@@ -146,6 +146,7 @@ function linearDiff(inputLinear, closestPrimary) {
 }
 
 var best = hexToLinearRGB("#ffffff");
+var besti;
 function bestBlack(sum, i, len) {
   let s1 = best.r + best.g + best.b;
   let s2 = sum.r  + sum.g  + sum.b;
@@ -156,6 +157,7 @@ function bestBlack(sum, i, len) {
 
   if (s1 > s2) {
     best = sum;
+    besti = i;
     print("New best", i, sum, Math.abs(sum.b - sum.g));
   }
 }
@@ -173,8 +175,23 @@ function getPattern(len) {
   }
 }
 
+function dither(x, y, i) {
+  let d = 2;
+  print("dither");
+  for (let x_ = x; x_ < (x+(90)); x_+=d)
+    for (let y_ = y; y_ < (y+(90)); y_+=d) {
+      let j = i;
+      g.setPixel(x_, y_, "#000000");
+      g.setPixel(x_, y_, palette[j & 7].hex); j >>= 3;
+      g.setPixel(x_+1, y_, palette[j & 7].hex); j >>= 3;
+      g.setPixel(x_, y_+1, palette[j & 7].hex); j >>= 3;
+      g.setPixel(x_+1, y_+1, palette[j & 7].hex); j >>= 3;
+    }
+}
+
 print("Recursion test");
 getPattern(4);
+print("Best is ", besti);
 
 function introScreen() {
   g.reset().clearRect(R);
@@ -189,6 +206,8 @@ function introScreen() {
     g.setColor(palette[i].hex);
     g.fillRect(100*i, 100, 100*i+90, 200);
   }
+
+  dither(0, 310, besti);
 }
 
 function redraw() {
