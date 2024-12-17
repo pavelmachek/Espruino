@@ -146,6 +146,12 @@ function linearDiff(inputLinear, closestPrimary) {
 }
 
 // greyscale
+
+let grey = [ 0x2, 0x84, 0x1c, 0x604,
+             0x15, 0x1d, 0xe5, 0x6,
+             0xe9, 0x50a, 0x26, 0x56d,
+             0xb55, 0x146, 0x4ed, 0xb76];
+
 // black  1.5   == 0x  2
 // target 1.6   == 0x 84
 //        1.8   == 0x 1c
@@ -201,7 +207,6 @@ function dither(x, y, i) {
   for (let x_ = x; x_ < (x+(90)); x_+=d)
     for (let y_ = y; y_ < (y+(90)); y_+=d) {
       let j = i;
-      g.setPixel(x_, y_, "#000000");
       g.setPixel(x_, y_, palette[j & 7].hex); j >>= 3;
       g.setPixel(x_+1, y_, palette[j & 7].hex); j >>= 3;
       g.setPixel(x_, y_+1, palette[j & 7].hex); j >>= 3;
@@ -229,7 +234,9 @@ function introScreen() {
     g.fillRect(100*i, 100, 100*i+90, 200);
   }
 
-  dither(0, 310, besti);
+  i = 0;
+  for (i=0; i<16; i++)
+    dither(50*i, 210, grey[i]);
 }
 
 function redraw() {
