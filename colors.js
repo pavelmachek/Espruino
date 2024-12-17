@@ -145,7 +145,27 @@ function linearDiff(inputLinear, closestPrimary) {
     };
 }
 
+// greyscale
+// black  1.5   == 0x  2
+// target 1.6   == 0x 84
+//        1.8   == 0x 1c
+//        1.85  == 0x604
+//        1.9         15
+// target 2     == 0x 1d
+//        2.3         e5
+//        2.4          6
+//        2.5         e9
+//        2.7   ==   50a
+//        2.8         26
+//        2.85       56d
+//        2.87       b55
+//        2.9   ==   146
+//        2.95  ==   4ed
+//        3.0  impossible
+// white        == 0xb76
+
 var best = hexToLinearRGB("#ffffff");
+var target = 1.95;
 var besti;
 function bestBlack(sum, i, len) {
   let s1 = best.r + best.g + best.b;
@@ -155,7 +175,7 @@ function bestBlack(sum, i, len) {
   if (Math.abs(sum.r - sum.g) > lim) return;
   if (Math.abs(sum.b - sum.g) > lim) return;
 
-  if (s1 > s2) {
+  if (Math.abs(s1-target) > Math.abs(s2-target)) {
     best = sum;
     besti = i;
     print("New best", i, sum, Math.abs(sum.b - sum.g));
@@ -192,6 +212,8 @@ function dither(x, y, i) {
 print("Recursion test");
 getPattern(4);
 print("Best is ", besti);
+
+// Best "black" -- 2
 
 function introScreen() {
   g.reset().clearRect(R);
