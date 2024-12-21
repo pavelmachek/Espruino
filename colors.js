@@ -112,8 +112,8 @@ console.log(`HEX to HSV: ${JSON.stringify(hsv)}`); // { h: 14, s: 80, v: 100 }
 const convertedHex = hsvToHex(hsv.h, hsv.s, hsv.v);
 console.log(`HSV to HEX: ${convertedHex}`); // "#FF5733"
 
-// Example palette (3-bit display colors)
-const palette = [
+// By comparing display against monitor
+const palette_old = [
   { originalHex: "#000000", hex: "#403f5f" }, // Black
   { originalHex: "#0000ff", hex: "#4b6ec0" }, // Blue
   { originalHex: "#00ff00", hex: "#839d68" }, // Green
@@ -123,6 +123,33 @@ const palette = [
   { originalHex: "#ffff00", hex: "#cdd5bc" }, // Sage Gray  -- spis #e7f5bf
   { originalHex: "#ffffff", hex: "#dff6c0" }  // White
 ];
+
+// Taking rgb from lowres photos
+const palette_blue = [
+  { originalHex: "#000000", hex: "#515fb8" }, // Black
+  { originalHex: "#0000ff", hex: "#4a88ff" }, // Blue
+  { originalHex: "#00ff00", hex: "#50c0f2" }, // Green
+  { originalHex: "#00ffff", hex: "#2fd9ff" }, // Sage Green
+  { originalHex: "#ff0000", hex: "#8286e7" }, // Red
+  { originalHex: "#ff00ff", hex: "#7aa0ff" }, // Muted Mauve
+  { originalHex: "#ffff00", hex: "#78ccff" }, // Sage Gray  -- spis #e7f5bf
+  { originalHex: "#ffffff", hex: "#6bebff" }  // White
+];
+
+
+// Taking rgb from better photos
+const palette = [
+  { originalHex: "#000000", hex: "#4e77b5" }, // Black
+  { originalHex: "#0000ff", hex: "#4c96eb" }, // Blue
+  { originalHex: "#00ff00", hex: "#6bb9bd" }, // Green
+  { originalHex: "#00ffff", hex: "#65c7e2" }, // Sage Green
+  { originalHex: "#ff0000", hex: "#9a86cd" }, // Red
+  { originalHex: "#ff00ff", hex: "#81a3fc" }, // Muted Mauve
+  { originalHex: "#ffff00", hex: "#9ebbcd" }, // Sage Gray  -- spis #e7f5bf
+  { originalHex: "#ffffff", hex: "#95cee9" }  // White
+];
+
+
 
 for (i=0; i<8; i++) {
   palette[i].l = hexToLinearRGB(palette[i].hex);
