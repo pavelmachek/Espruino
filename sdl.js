@@ -42,8 +42,11 @@ Bangle.loadWidgets = print;
 Bangle.drawWidgets = print;
 Bangle.setUI =  bangle_setUI;
 Bangle.project = bangle_project;
+Bangle.isCharging = function () { return false; }
 Bangle.on = bangle_on;
-WIDGETS = [];
+WIDGETS = false;
+E = {};
+E.getBattery = function () { return 100; }
 initWindow(1024, 768);
 
 function backdoor(x, y) { return peek8(x); }
