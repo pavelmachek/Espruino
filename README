@@ -1,0 +1,8 @@
+bin/espruino ./test.js
+
+jde udelat
+
+cp /tmp/geo/delme.mtar .
+bin/espruino
+
+d = require('fs').readFile("delme.mtar"); require('Storage').write("delme.mtar", d);
