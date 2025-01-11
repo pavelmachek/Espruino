@@ -33,7 +33,8 @@
 # CPPFILE=test.cpp        # Compile in the supplied C++ file
 # ESPRUINO_WRAPPERSOURCES=jswrap_x.c
 #                         # Compile in a wrapper file to the build (with JS functions in). WRAPPERSOURCES can be used too, but this adds the files to the END of the sources list
-# PYTHON=python3          # The python command used for this build
+PYTHON=python3          # The python command used for this build
+USE_LCD_SDL=1
 #
 # WIZNET=1                # If compiling for a non-linux target that has internet support, use WIZnet W5500 support
 # W5100=1                 # Compile for WIZnet W5100 (not W5500)
