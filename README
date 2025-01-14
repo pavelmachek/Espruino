@@ -6,3 +6,11 @@ cp /tmp/geo/delme.mtar .
 bin/espruino
 
 d = require('fs').readFile("delme.mtar"); require('Storage').write("delme.mtar", d);
+
+git push --set-upstream my m_1_sdl
+
+sdl: Add support for input
+
+I find SDL support in Espruino useful. And it would be even more useful if it has input ... so I did that. I'm now using it for developing applications for Bangle.js2 without hardware and without emulator, and it is rather useful.
+
+Please review. There's probably better way to do this, but I'll need pointers.
