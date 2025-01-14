@@ -36,6 +36,13 @@ function initWindow(x, y) {
   g.flip = print;
 }
 
+function onTouch(drag) {
+  let d = bangle_on_map['drag'];
+  if (d) {
+    d(drag);
+  }
+}
+
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
@@ -47,6 +54,7 @@ Bangle.on = bangle_on;
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
+E.on("touch", onTouch);
 //initWindow(1024, 768);
 initWindow(240, 240);
 
