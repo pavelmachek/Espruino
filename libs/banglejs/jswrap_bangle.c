@@ -14,6 +14,7 @@
  * ----------------------------------------------------------------------------
  */
 
+#include <stdio.h>
 #include <jswrap_bangle.h>
 #include "jsinteractive.h"
 #include "jsdevices.h"
@@ -49,6 +50,9 @@
 #endif
 
 #include "jswrap_graphics.h"
+#ifdef EMULATED
+#include "lcd_memlcd.h"
+#endif
 #ifdef LCD_CONTROLLER_LPM013M126
 #include "lcd_memlcd.h"
 #endif
@@ -89,7 +93,7 @@
 #define EV_BANGLEJS 1
 #define BTN1_ONSTATE 1
 #define BTN1_PININDEX 1
-JsGraphics graphicsInternal;
+//JsGraphics graphicsInternal;
 #define BTN2_PININDEX 2
 //void btn2Handler(bool state, IOEventFlags flags) {}
 void stepcount_init(void) {}
@@ -3633,6 +3637,18 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   jshPinOutput(3,1); // general VDD power?
   jshPinOutput(46,0); // What's this? Who knows! But it stops screen flicker and makes the touchscreen work nicely
   jshPinOutput(LCD_BL,1); // Backlight
+#endif
+  printf("jswrap_banglejs_hwinit: init\n");
+#ifdef EMULATED
+  graphicsStructInit(&graphicsInternal, LCD_WIDTH, LCD_HEIGHT, LCD_BPP);
+  graphicsInternal.data.type = JSGRAPHICSTYPE_SDL;
+  graphicsInternal.data.bpp = 16; // hack - so we can dither we pretend we're 16 bit
+  graphicsInternal.data.flags = 0;
+//  lcdMemLCD_init(&graphicsInternal);
+  graphicsSetCallbacks(&graphicsInternal);
+  // set default graphics themes - before we even start to load settings.json
+  jswrap_banglejs_setTheme();
+  graphicsFillRect(&graphicsInternal, 0,0,LCD_WIDTH-1,LCD_HEIGHT-1,graphicsTheme.bg);
 #endif
 #ifndef EMULATED
 #ifdef NRF52832
