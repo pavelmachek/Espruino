@@ -3639,7 +3639,7 @@ NO_INLINE void jswrap_banglejs_hwinit() {
   jshPinOutput(LCD_BL,1); // Backlight
 #endif
   printf("jswrap_banglejs_hwinit: init\n");
-#ifdef EMULATED
+#if 0
   graphicsStructInit(&graphicsInternal, LCD_WIDTH, LCD_HEIGHT, LCD_BPP);
   graphicsInternal.data.type = JSGRAPHICSTYPE_SDL;
   graphicsInternal.data.bpp = 16; // hack - so we can dither we pretend we're 16 bit
@@ -5917,7 +5917,7 @@ information.
       ["menu","JsVar","An object containing name->function mappings to to be used in a menu"]
     ],
     "return" : ["JsVar", "A menu object with `draw`, `move` and `select` functions" ],
-    "ifdef" : "BANGLEJS",
+    "ifdef" : "MENU",
     "typescript": [
       "showMenu(menu: Menu): MenuInstance;",
       "showMenu(): void;"
@@ -6010,7 +6010,7 @@ E.showMenu(menu);
       ["message","JsVar","A message to display. Can include newlines"],
       ["options","JsVar","[optional] a title for the message, or an object of options `{title:string, img:image_string}`"]
     ],
-    "ifdef" : "BANGLEJS",
+    "ifdef" : "MENU",
     "typescript" : "showMessage(message: string, title?: string | { title?: string, img?: string }): void;"
 }
 
@@ -6044,7 +6044,7 @@ E.showMessage("Lots of text will wrap automatically",{
       ["options","JsVar","[optional] an object of options (see below)"]
     ],
     "return" : ["JsVar","A promise that is resolved when 'Ok' is pressed"],
-    "ifdef" : "BANGLEJS",
+    "ifdef" : "MENU",
     "typescript" : [
       "showPrompt<T = boolean>(message: string, options?: { title?: string, buttons?: { [key: string]: T }, image?: string, remove?: () => void }): Promise<T>;",
       "showPrompt(): void;"
@@ -6101,7 +6101,7 @@ The second `options` argument can contain:
       ["options","JsVar","An object containing `{ h, c, draw, select, back, remove }` (see below) "]
     ],
     "return" : ["JsVar", "A menu object with `draw()` and `drawItem(itemNo)` functions" ],
-    "ifdef" : "BANGLEJS",
+    "ifdef" : "MENU",
     "typescript" : [
       "showScroller(options?: { h: number, c: number, draw: (idx: number, rect: { x: number, y: number, w: number, h: number }) => void, select: (idx: number, touch?: {x: number, y: number}) => void, back?: () => void, remove?: () => void }): { draw: () => void, drawItem: (itemNo: number) => void };",
       "showScroller(): void;"
@@ -6148,7 +6148,7 @@ To remove the scroller, just call `E.showScroller()`
 /*JSON{
     "type" : "staticmethod", "class" : "E", "name" : "showMenu", "patch":true,
     "generate_js" : "libs/js/banglejs/E_showMenu_Q3.min.js",
-    "#if" : "defined(BANGLEJS) && defined(BANGLEJS_Q3)"
+    "#if" : "defined(MENU)"
 }
 */
 /*JSON{
@@ -6160,13 +6160,13 @@ To remove the scroller, just call `E.showScroller()`
 /*JSON{
     "type" : "staticmethod", "class" : "E", "name" : "showPrompt", "patch":true,
     "generate_js" : "libs/js/banglejs/E_showPrompt_Q3.min.js",
-    "#if" : "defined(BANGLEJS) && defined(BANGLEJS_Q3)"
+    "#if" : "defined(MENU)"
 }
 */
 /*JSON{
     "type" : "staticmethod", "class" : "E", "name" : "showScroller", "patch":true,
     "generate_js" : "libs/js/banglejs/E_showScroller_Q3.min.js",
-    "#if" : "defined(BANGLEJS) && defined(BANGLEJS_Q3)"
+    "#if" : "defined(MENU)"
 }
 */
 
@@ -6180,7 +6180,7 @@ To remove the scroller, just call `E.showScroller()`
       ["options","JsVar","[optional] a title for the message or an object containing options"]
     ],
     "return" : ["JsVar","A promise that is resolved when 'Ok' is pressed"],
-    "ifdef" : "BANGLEJS",
+    "ifdef" : "MENU",
     "typescript" : [
       "showAlert(message?: string, options?: string): Promise<void>;",
       "showAlert(message?: string, options?: { title?: string, remove?: () => void }): Promise<void>;"
