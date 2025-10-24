@@ -18,3 +18,5 @@ Please review. There's probably better way to do this, but I'll need pointers.
 --
 
 sudo apt install libsdl1.2-dev
+
+DISPLAY=:1 bin/espruino bench.js

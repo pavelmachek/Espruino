@@ -141,7 +141,7 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 #ifdef USE_LCD_SDL
 	/* HERE */
-	if (wordSize != 1) return ~0;
+  if (wordSize != 1) return (void *) ~0;
 	uint32_t ret = SDL_Backdoor(addr);
 	//printf("io_peek %x %x -> %x\n", addr, wordSize, ret);  fflush(stdout);
 	return jsvNewFromLongInteger(ret);
@@ -173,7 +173,7 @@ void _jswrap_io_poke(JsVarInt addr, uint32_t data, int wordSize) {
 	/* HERE */
   printf("io_poke %x %x %x\n", addr, data, wordSize);
   fflush(stdout);
-  return 1337;
+  return;
 	
   if (wordSize==1) (*(unsigned char*)(size_t)addr) = (unsigned char)data;
   else if (wordSize==2) (*(unsigned short*)(size_t)addr) = (unsigned short)data;
