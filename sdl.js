@@ -58,7 +58,7 @@ E.on("touch", onTouch);
 //initWindow(1024, 768);
 initWindow(240, 240);
 
-function backdoor(x, y) { // return peek8(x);
+function backdoor(x, y) { //return peek8(x);
 }
 //function backdoor(x, y) { return g.getPixel(x, 0); }
 

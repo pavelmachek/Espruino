@@ -36,7 +36,21 @@ info = {
      'DEFINES+=-DESPR_UNICODE_SUPPORT=1',
      'DEFINES+=-DUSE_FONT_6X8 -DGRAPHICS_PALETTED_IMAGES -DGRAPHICS_ANTIALIAS -DESPR_PBF_FONTS',
      'DEFINES+=-DSPIFLASH_BASE=0 -DSPIFLASH_LENGTH=FLASH_SAVED_CODE_LENGTH', # For Testing Flash Strings
+     'DEFINES+=-DEMULATED',
      'LINUX=1',
+     'JSMODULESOURCES += libs/js/banglejs/locale.min.js',
+     'JSMODULESOURCES += libs/js/banglejs/Layout.min.js',
+     'JSMODULESOURCES += libs/js/graphical_menu.min.js',
+     'JSMODULESOURCES += libs/js/pixljs/E_showAlert.min.js',
+     'JSMODULESOURCES += libs/js/pixljs/E_showMenu.min.js',
+     'JSMODULESOURCES += libs/js/pixljs/E_showMessage.min.js',
+     'JSMODULESOURCES += libs/js/pixljs/E_showPrompt.min.js',
+     'JSMODULESOURCES += libs/js/banglejs/E_showMenu_F18.min.js',
+     'INCLUDE += -I$(ROOT)/libs/banglejs -I$(ROOT)/libs/misc',
+     'WRAPPERSOURCES += libs/banglejs/jswrap_bangle.c',
+#     'WRAPPERSOURCES += libs/misc/jswrap_menu.c',
+     'WRAPPERSOURCES += libs/graphics/jswrap_font_6x15.c',
+     'WRAPPERSOURCES += libs/graphics/jswrap_font_12x20.c',
    ]
  }
 };

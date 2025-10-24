@@ -14,7 +14,6 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <jswrap_bangle.h>
 #include "jsinteractive.h"
 #include "jsdevices.h"
 #include "jsnative.h"
@@ -35,6 +34,7 @@
 #include "jsflash.h"
 #include "graphics.h"
 #include "bitmap_font_6x8.h"
+#define EMULATED
 #ifndef EMULATED
 #include "jswrap_bluetooth.h"
 #include "app_timer.h"
@@ -77,23 +77,6 @@
 
 #ifdef HEARTRATE_DEVICE_VC31
 #include "hrm_vc31.h" // for Bangle.setOptions
-#endif
-
-#ifdef EMULATED
-/* FIXME: hacks */
-#define HOME_BTN 0
-#define LCD_WIDTH 176
-#define LCD_HEIGHT 176
-#define LCD_BPP 8
-#define HOME_BTN_PININDEX 0
-#define EV_BANGLEJS 1
-#define BTN1_ONSTATE 1
-#define BTN1_PININDEX 1
-JsGraphics graphicsInternal;
-#define BTN2_PININDEX 2
-//void btn2Handler(bool state, IOEventFlags flags) {}
-void stepcount_init(void) {}
-#define VIBRATE_PIN 3
 #endif
 
 /*TYPESCRIPT
