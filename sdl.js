@@ -199,9 +199,7 @@ function optionalScaleFile(name) {
   return fs_existsSync(f) ? f : null;
 }
 
-const SCALE_X = optionalScaleFile('in_accel_x_scale');
-const SCALE_Y = optionalScaleFile('in_accel_y_scale');
-const SCALE_Z = optionalScaleFile('in_accel_z_scale');
+const SCALE_ACC = optionalScaleFile('in_accel_scale');
 
 // --- Poll accelerometer and emit ---
 function readAccelSample() {
@@ -209,13 +207,11 @@ function readAccelSample() {
   const rawY = readFloatFile(RAW_Y);
   const rawZ = readFloatFile(RAW_Z);
 
-  const scaleX = SCALE_X ? readFloatFile(SCALE_X) : 1;
-  const scaleY = SCALE_Y ? readFloatFile(SCALE_Y) : 1;
-  const scaleZ = SCALE_Z ? readFloatFile(SCALE_Z) : 1;
+  const scale = SCALE_ACC ? readFloatFile(SCALE_ACC) : 1;
 
-  const x = rawX * scaleX / 1000;
-  const y = rawY * scaleY / 1000;
-  const z = rawZ * scaleZ / 1000;
+  const x = rawX * scale / 10;
+  const y = rawY * scale / 10;
+  const z = rawZ * scale / 10;
   const mag = Math.sqrt(x*x + y*y + z*z);
 
   const acc = { x, y, z, mag, td: SAMPLE_INTERVAL_MS/1000 };
@@ -233,6 +229,6 @@ function emulate_accel() {
 }
 
 print("Test being loaded");
-setInterval(sdl_poll, 15000);
+setInterval(sdl_poll, 500);
 
 // --- end glue
