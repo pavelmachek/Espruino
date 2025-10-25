@@ -59,7 +59,7 @@ E.getBattery = function () { return 100; }
 E.on("touch", onTouch);
 //initWindow(1024, 768);
 //initWindow(240, 240);
-initWindow(350, 600);
+initWindow(360, 660);
 
 function backdoor(x, y) { //return peek8(x);
 }
@@ -119,9 +119,116 @@ function sdl_poll() {
     }
     e = backdoor(0, 0);
   }
+
+    if (bangle_on_map["accel"]) {
+	print("handle accel");
+	emulate_accel();
+    }
+    if (bangle_on_map["mag"]) {
+	print("handle mag");
+    }
+}
+
+// Sensors handling ------------------------------------------------------------------------------
+
+const fs = require('fs');
+
+const IIO_BASE = '/sys/bus/iio/devices';
+const SAMPLE_INTERVAL_MS = 40;
+
+// --- Utility functions ---
+function readFloatFile(filePath) {
+  try {
+    const s = fs.readFileSync(filePath, 'utf8').trim();
+    return parseFloat(s);
+  } catch (_) {
+    return NaN;
+  }
+}
+
+function path_join(a,b) { return a+'/'+b; }
+
+function listIIODeviceDirs() {
+  return fs.readdirSync(IIO_BASE)
+           .filter(f => f.startsWith('iio:device'))
+           .map(f => path_join(IIO_BASE, f));
+}
+
+function fs_existsSync(p) {
+    print("Test", p);
+    try {
+	return require("fs").readFile(p)!==undefined;
+    } catch (_) {
+	return false;
+    }
+}
+
+// --- Search for accelerometer device ---
+function findAccelDevice() {
+    for (const devPath of listIIODeviceDirs()) {
+	print("Probing", devPath);
+    const x = path_join(devPath, 'in_accel_x_raw');
+    const y = path_join(devPath, 'in_accel_y_raw');
+    const z = path_join(devPath, 'in_accel_z_raw');
+    if (fs_existsSync(x) && fs_existsSync(y) && fs_existsSync(z)) {
+      return devPath;
+    }
+  }
+  return null;
+}
+
+// --- Initialize ---
+const accelDev = findAccelDevice();
+if (!accelDev) {
+  console.error('No accelerometer device found under', IIO_BASE);
+  process.exit(1);
+}
+console.log('Using accelerometer at', accelDev);
+
+// --- Read file paths dynamically ---
+const RAW_X = path_join(accelDev, 'in_accel_x_raw');
+const RAW_Y = path_join(accelDev, 'in_accel_y_raw');
+const RAW_Z = path_join(accelDev, 'in_accel_z_raw');
+
+function optionalScaleFile(name) {
+  const f = path_join(accelDev, name);
+  return fs_existsSync(f) ? f : null;
+}
+
+const SCALE_X = optionalScaleFile('in_accel_x_scale');
+const SCALE_Y = optionalScaleFile('in_accel_y_scale');
+const SCALE_Z = optionalScaleFile('in_accel_z_scale');
+
+// --- Poll accelerometer and emit ---
+function readAccelSample() {
+  const rawX = readFloatFile(RAW_X);
+  const rawY = readFloatFile(RAW_Y);
+  const rawZ = readFloatFile(RAW_Z);
+
+  const scaleX = SCALE_X ? readFloatFile(SCALE_X) : 1;
+  const scaleY = SCALE_Y ? readFloatFile(SCALE_Y) : 1;
+  const scaleZ = SCALE_Z ? readFloatFile(SCALE_Z) : 1;
+
+  const x = rawX * scaleX / 1000;
+  const y = rawY * scaleY / 1000;
+  const z = rawZ * scaleZ / 1000;
+  const mag = Math.sqrt(x*x + y*y + z*z);
+
+  const acc = { x, y, z, mag, td: SAMPLE_INTERVAL_MS/1000 };
+  return acc;
+}
+
+function emulate_accel() {
+  const acc = readAccelSample();
+  Bangle._last = acc;
+  let d = bangle_on_map['accel'];
+  if (d) {
+    d(acc);
+  }
+    
 }
 
 print("Test being loaded");
-setInterval(sdl_poll, 10);
+setInterval(sdl_poll, 15000);
 
 // --- end glue
