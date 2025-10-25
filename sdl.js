@@ -262,6 +262,61 @@ function emulate_mag() {
   }
 }
 
+// GPS -----------------------------------------------------------------------------------
+
+const GNSS_DEVICE = '/dev/gnss0';
+
+// --- NMEA parsing helpers ---
+function parseNMEACoords(coord, hemi) {
+  if (!coord) return NaN;
+  const deg = parseInt(coord.slice(0, -7), 10);
+  const min = parseFloat(coord.slice(-7));
+  let val = deg + (min / 60.0);
+  if (hemi === 'S' || hemi === 'W') val = -val;
+  return val;
+}
+
+function knotsToMps(knots) {
+  return knots * 0.514444;
+}
+
+function bad_read() {
+// --- GPS reader ---
+if (fs.existsSync(GNSS_DEVICE)) {
+  const rl = readline.createInterface({
+    input: fs.createReadStream(GNSS_DEVICE, { encoding: 'utf8' })
+  });
+
+  rl.on('line', line => {
+    if (!line.startsWith('$')) return;
+
+    const parts = line.split(',');
+    const type = parts[0].substring(3);
+
+    if (type === 'GGA' || type === 'RMC') {
+      const lat = parseNMEACoords(parts[3], parts[4]);
+      const lon = parseNMEACoords(parts[5], parts[6]);
+      const fix = (type === 'GGA') ? parseInt(parts[6]) : (parts[2] === 'A' ? 1 : 0);
+      const alt = type === 'GGA' ? parseFloat(parts[9]) : NaN;
+      const spd = type === 'RMC' ? knotsToMps(parseFloat(parts[7])) : NaN;
+      const course = type === 'RMC' ? parseFloat(parts[8]) : NaN;
+
+      const gps = { fix, lat, lon, alt, speed: spd, course };
+      Bangle._lastGPS = gps;
+      emit('gps', gps);
+    }
+  });
+} else {
+  console.error('No GNSS device found at', GNSS_DEVICE);
+}
+}
+
+// Example usage
+bangle_on('gps', gps => {
+  console.log(`GPS fix=${gps.fix} lat=${gps.lat.toFixed(5)} lon=${gps.lon.toFixed(5)} alt=${gps.alt}`);
+});
+
+
 print("Test being loaded");
 setInterval(sdl_poll, 500);
 
