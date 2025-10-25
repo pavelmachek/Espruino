@@ -164,6 +164,10 @@ function fs_existsSync(p) {
 }
 
 // --- Search for accelerometer device ---
+// Librem5:
+// echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
+// echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
+
 function findAccelDevice() {
     for (const devPath of listIIODeviceDirs()) {
 	print("Probing", devPath);
