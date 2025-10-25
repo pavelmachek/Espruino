@@ -126,6 +126,7 @@ function sdl_poll() {
     }
     if (bangle_on_map["mag"]) {
 	print("handle mag");
+	emulate_mag();
     }
 }
 
@@ -232,40 +233,25 @@ function fs_existsSync(p) {
 // Librem5:
 // echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
 // echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
-
-// --- Poll accelerometer and emit ---
-function readAccelSample() {
-  const rawX = readFloatFile(RAW_X);
-  const rawY = readFloatFile(RAW_Y);
-  const rawZ = readFloatFile(RAW_Z);
-
-  const scale = SCALE_ACC ? readFloatFile(SCALE_ACC) : 1;
-
-  const x = rawX * scale / 10;
-  const y = rawY * scale / 10;
-  const z = rawZ * scale / 10;
-  const mag = Math.sqrt(x*x + y*y + z*z);
-
-  const acc = { x, y, z, mag, td: SAMPLE_INTERVAL_MS/1000 };
-  return acc;
-}
+// echo 80 | sudo tee /sys/bus/iio/devices/iio:device3/sampling_frequency
 
 function emulate_accel() {
     print("Emulate accel");
-  const acc = readVectorSample(accelPaths, 10);
-  Bangle._last = acc;
+  const v = readVectorSample(accelPaths, 10);
   let d = bangle_on_map['accel'];
   if (d) {
-    d(acc);
+    d(v);
   }
 }
 
 function emulate_mag() {
     print("Emulate mag");
   if (!magPaths) return;
-  const mag = readVectorSample(magPaths, 1); // magnetometer scaling often in uT already
-  Bangle._lastMag = mag;
-  emit('mag', { ...mag, td: SAMPLE_INTERVAL_MS / 1000 });
+  const v = readVectorSample(magPaths, 1); // magnetometer scaling often in uT already
+  let d = bangle_on_map['mag'];
+  if (d) {
+    d(v);
+  }
 }
 
 print("Test being loaded");
