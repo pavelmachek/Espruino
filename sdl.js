@@ -254,7 +254,8 @@ function emulate_accel() {
 function emulate_mag() {
     print("Emulate mag");
   if (!magPaths) return;
-  const v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
+    let v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
+    v.y = -v.y;
   let d = bangle_on_map['mag'];
   if (d) {
     d(v);
