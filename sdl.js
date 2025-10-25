@@ -50,13 +50,16 @@ Bangle.drawWidgets = print;
 Bangle.setUI =  bangle_setUI;
 Bangle.project = bangle_project;
 Bangle.isCharging = function () { return false; }
+Bangle.isCompassOn = function () { return false; }
+Bangle.setCompassPower = function (v) {}
 Bangle.on = bangle_on;
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
 E.on("touch", onTouch);
 //initWindow(1024, 768);
-initWindow(240, 240);
+//initWindow(240, 240);
+initWindow(350, 600);
 
 function backdoor(x, y) { //return peek8(x);
 }
