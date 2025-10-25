@@ -237,7 +237,8 @@ function fs_existsSync(p) {
 
 function emulate_accel() {
     print("Emulate accel");
-  const v = readVectorSample(accelPaths, 10);
+    let v = readVectorSample(accelPaths, 10);
+    v.x = -v.x;
   let d = bangle_on_map['accel'];
   if (d) {
     d(v);
