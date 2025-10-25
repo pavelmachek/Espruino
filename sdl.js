@@ -194,11 +194,17 @@ if (magDev) console.log('Using magnetometer at', magDev);
 
 // --- Read file paths dynamically ---
 function makeRawPaths(devPath, prefix) {
+    let scale = null;
+    t = path_join(devPath, `in_${prefix}_scale`);
+    if (fs_existsSync(t)) scale = t;
+    t = path_join(devPath, `in_${prefix}_x_scale`);
+    if (fs_existsSync(t)) scale = t;
+	
   return {
     x: path_join(devPath, `in_${prefix}_x_raw`),
     y: path_join(devPath, `in_${prefix}_y_raw`),
     z: path_join(devPath, `in_${prefix}_z_raw`),
-    scale: fs_existsSync(path_join(devPath, `in_${prefix}_scale`)) ? path_join(devPath, `in_${prefix}_scale`) : null,
+    scale: scale
   };
 }
 
@@ -248,7 +254,7 @@ function emulate_accel() {
 function emulate_mag() {
     print("Emulate mag");
   if (!magPaths) return;
-  const v = readVectorSample(magPaths, 1); // magnetometer scaling often in uT already
+  const v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
   let d = bangle_on_map['mag'];
   if (d) {
     d(v);
