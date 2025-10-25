@@ -146,7 +146,7 @@ function readFloatFile(filePath) {
   }
 }
 
-function path_join(a,b) { return a+'/'+b; }
+function path_join(a, b) { return a + '/' + b; }
 
 function listIIODeviceDirs() {
   return fs.readdirSync(IIO_BASE)
@@ -163,17 +163,12 @@ function fs_existsSync(p) {
     }
 }
 
-// --- Search for accelerometer device ---
-// Librem5:
-// echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
-// echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
-
-function findAccelDevice() {
-    for (const devPath of listIIODeviceDirs()) {
-	print("Probing", devPath);
-    const x = path_join(devPath, 'in_accel_x_raw');
-    const y = path_join(devPath, 'in_accel_y_raw');
-    const z = path_join(devPath, 'in_accel_z_raw');
+// --- Generic sensor search ---
+function findDevice(prefix) {
+  for (const devPath of listIIODeviceDirs()) {
+    const x = path_join(devPath, `in_${prefix}_x_raw`);
+    const y = path_join(devPath, `in_${prefix}_y_raw`);
+    const z = path_join(devPath, `in_${prefix}_z_raw`);
     if (fs_existsSync(x) && fs_existsSync(y) && fs_existsSync(z)) {
       return devPath;
     }
@@ -182,24 +177,61 @@ function findAccelDevice() {
 }
 
 // --- Initialize ---
-const accelDev = findAccelDevice();
+const accelDev = findDevice('accel');
+const magDev = findDevice('magn');
+
 if (!accelDev) {
   console.error('No accelerometer device found under', IIO_BASE);
   process.exit(1);
 }
-console.log('Using accelerometer at', accelDev);
-
-// --- Read file paths dynamically ---
-const RAW_X = path_join(accelDev, 'in_accel_x_raw');
-const RAW_Y = path_join(accelDev, 'in_accel_y_raw');
-const RAW_Z = path_join(accelDev, 'in_accel_z_raw');
-
-function optionalScaleFile(name) {
-  const f = path_join(accelDev, name);
-  return fs_existsSync(f) ? f : null;
+if (!magDev) {
+  console.warn('No magnetometer device found under', IIO_BASE);
 }
 
-const SCALE_ACC = optionalScaleFile('in_accel_scale');
+console.log('Using accelerometer at', accelDev);
+if (magDev) console.log('Using magnetometer at', magDev);
+
+// --- Read file paths dynamically ---
+function makeRawPaths(devPath, prefix) {
+  return {
+    x: path_join(devPath, `in_${prefix}_x_raw`),
+    y: path_join(devPath, `in_${prefix}_y_raw`),
+    z: path_join(devPath, `in_${prefix}_z_raw`),
+    scale: fs_existsSync(path_join(devPath, `in_${prefix}_scale`)) ? path_join(devPath, `in_${prefix}_scale`) : null,
+  };
+}
+
+const accelPaths = makeRawPaths(accelDev, 'accel');
+const magPaths = magDev ? makeRawPaths(magDev, 'magn') : null;
+
+print("Have paths: ", accelPaths, magPaths);
+
+// --- Sensor readers ---
+function readVectorSample(paths, scaleDiv) {
+  const rawX = readFloatFile(paths.x);
+  const rawY = readFloatFile(paths.y);
+  const rawZ = readFloatFile(paths.z);
+  const scale = paths.scale ? readFloatFile(paths.scale) : 1;
+
+  const x = rawX * scale / scaleDiv;
+  const y = rawY * scale / scaleDiv;
+  const z = rawZ * scale / scaleDiv;
+  const mag = Math.sqrt(x * x + y * y + z * z);
+  return { x, y, z, mag };
+}
+
+function fs_existsSync(p) {
+    print("Test", p);
+    try {
+	return require("fs").readFile(p)!==undefined;
+    } catch (_) {
+	return false;
+    }
+}
+
+// Librem5:
+// echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
+// echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
 
 // --- Poll accelerometer and emit ---
 function readAccelSample() {
@@ -219,13 +251,21 @@ function readAccelSample() {
 }
 
 function emulate_accel() {
-  const acc = readAccelSample();
+    print("Emulate accel");
+  const acc = readVectorSample(accelPaths, 10);
   Bangle._last = acc;
   let d = bangle_on_map['accel'];
   if (d) {
     d(acc);
   }
-    
+}
+
+function emulate_mag() {
+    print("Emulate mag");
+  if (!magPaths) return;
+  const mag = readVectorSample(magPaths, 1); // magnetometer scaling often in uT already
+  Bangle._lastMag = mag;
+  emit('mag', { ...mag, td: SAMPLE_INTERVAL_MS / 1000 });
 }
 
 print("Test being loaded");
