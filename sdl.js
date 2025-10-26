@@ -128,6 +128,9 @@ function sdl_poll() {
 	print("handle mag");
 	emulate_mag();
     }
+    if (bangle_on_map["gps"]) {
+	emulate_gps();
+    }
 }
 
 // Sensors handling ------------------------------------------------------------------------------
@@ -311,9 +314,11 @@ function gps_parse(v) {
 	}
     }
 
-    const gps = { fix, lat, lon, alt, speed: spd, course };
-    Bangle._lastGPS = gps;
-    print('gps', gps);
+    const v = { fix, lat, lon, alt, speed: spd, course };
+         let d = bangle_on_map['gps'];
+  if (d) {
+    d(v);
+  }
 }
 
 
@@ -327,8 +332,10 @@ function test_read() {
     }
 }
 
+function emulate_gps() {
 s = fs.readFileSync("/tmp/delme.gnss", 'utf8');
-gps_parse(s);
+    gps_parse(s);
+}
 
 
 //f = E.openFile("/etc/passwd")
