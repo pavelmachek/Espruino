@@ -269,10 +269,11 @@ const GNSS_DEVICE = '/dev/gnss0';
 // --- NMEA parsing helpers ---
 function parseNMEACoords(coord, hemi) {
   if (!coord) return NaN;
-  const deg = parseInt(coord.slice(0, -7), 10);
-  const min = parseFloat(coord.slice(-7));
+  const deg = parseInt(coord.slice(0, -8), 10);
+  const min = parseFloat(coord.slice(-8));
   let val = deg + (min / 60.0);
-  if (hemi === 'S' || hemi === 'W') val = -val;
+    if (hemi === 'S' || hemi === 'W') val = -val;
+    print(coord, hemi, '->', val);
   return val;
 }
 
