@@ -1,5 +1,10 @@
 // --- Linux - Bangle glue
 
+// Librem5:
+// echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
+// echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
+// echo 80 | sudo tee /sys/bus/iio/devices/iio:device3/sampling_frequency
+
 function bangle_project(latlong) {
   let degToRad = Math.PI / 180; // degree to radian conversion              
   let latMax = 85.0511287798; // clip latitude to sane values          
@@ -125,11 +130,9 @@ function sdl_poll() {
   }
 
     if (bangle_on_map["accel"]) {
-	print("handle accel");
 	emulate_accel();
     }
     if (bangle_on_map["mag"]) {
-	print("handle mag");
 	emulate_mag();
     }
     if (bangle_on_map["gps"]) {
@@ -243,30 +246,24 @@ function fs_existsSync(p) {
     }
 }
 
-// Librem5:
-// echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
-// echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
-// echo 80 | sudo tee /sys/bus/iio/devices/iio:device3/sampling_frequency
 
 function emulate_accel() {
-    print("Emulate accel");
     let v = readVectorSample(accelPaths, 10);
     v.x = -v.x;
-  let d = bangle_on_map['accel'];
-  if (d) {
-    d(v);
-  }
+    let d = bangle_on_map['accel'];
+    if (d) {
+	d(v);
+    }
 }
 
 function emulate_mag() {
-    print("Emulate mag");
-  if (!magPaths) return;
+    if (!magPaths) return;
     let v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
     v.y = -v.y;
-  let d = bangle_on_map['mag'];
-  if (d) {
-    d(v);
-  }
+    let d = bangle_on_map['mag'];
+    if (d) {
+	d(v);
+    }
 }
 
 // GPS -----------------------------------------------------------------------------------
@@ -342,17 +339,7 @@ function emulate_gps() {
 }
 
 
-//f = E.openFile("/etc/passwd")
-//f.read(123)?
-//test_read();
-
-// Example usage
-bangle_on('gps', gps => {
-  console.log(`GPS fix=${gps.fix} lat=${gps.lat.toFixed(5)} lon=${gps.lon.toFixed(5)} alt=${gps.alt}`);
-});
-
-
 print("Test being loaded");
-setInterval(sdl_poll, 500);
+setInterval(sdl_poll, 10);
 
 // --- end glue
