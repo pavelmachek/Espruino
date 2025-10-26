@@ -186,4 +186,5 @@ eval(require("fs").readFile("sdl.js"));
     console.log("FINAL ANGLES (deg):", angle);
   });
 
+g.setColor(0);
 init();
