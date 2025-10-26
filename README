@@ -7,6 +7,9 @@ bin/espruino
 
 d = require('fs').readFile("delme.mtar"); require('Storage').write("delme.mtar", d);
 
+fs -- linuxovej filesystem
+storage -- interni simulovana flash
+
 git push --set-upstream my m_1_sdl
 
 sdl: Add support for input

@@ -311,6 +311,22 @@ if (fs.existsSync(GNSS_DEVICE)) {
 }
 }
 
+function test_read() {
+    var fd = fs.open("data.bin", "r");
+    var buf = new Uint8Array(1);
+    for (let i=0; i<100; i++) {
+    fs.readSync(fd, buf, 0, 1, 0);
+    print("Byte value:", buf[0]);
+	fs.closeSync(fd);
+    }
+}
+
+print(fs);
+print(fs.openFile("/etc/passwd"));
+//f = E.openFile("/etc/passwd")
+//f.read(123)?
+//test_read();
+
 // Example usage
 bangle_on('gps', gps => {
   console.log(`GPS fix=${gps.fix} lat=${gps.lat.toFixed(5)} lon=${gps.lon.toFixed(5)} alt=${gps.alt}`);
