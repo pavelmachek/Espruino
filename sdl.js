@@ -138,6 +138,9 @@ function sdl_poll() {
     if (bangle_on_map["gps"]) {
 	emulate_gps();
     }
+    if (bangle_on_map["gyro"]) {
+	emulate_gyro();
+    }
 }
 
 // Sensors handling ------------------------------------------------------------------------------
@@ -190,6 +193,7 @@ function findDevice(prefix) {
 // --- Initialize ---
 const accelDev = findDevice('accel');
 const magDev = findDevice('magn');
+const gyroDev = findDevice('anglvel');
 
 if (!accelDev) {
   console.error('No accelerometer device found under', IIO_BASE);
@@ -198,9 +202,13 @@ if (!accelDev) {
 if (!magDev) {
   console.warn('No magnetometer device found under', IIO_BASE);
 }
+if (!gyroDev) {
+  console.warn('No gyroscope device found under', IIO_BASE);
+}
 
 console.log('Using accelerometer at', accelDev);
 if (magDev) console.log('Using magnetometer at', magDev);
+if (gyroDev) console.log('Using gyroscope at', gyroDev);
 
 // --- Read file paths dynamically ---
 function makeRawPaths(devPath, prefix) {
@@ -220,8 +228,9 @@ function makeRawPaths(devPath, prefix) {
 
 const accelPaths = makeRawPaths(accelDev, 'accel');
 const magPaths = magDev ? makeRawPaths(magDev, 'magn') : null;
+const gyroPaths = gyroDev ? makeRawPaths(gyroDev, 'anglval') : null;
 
-print("Have paths: ", accelPaths, magPaths);
+print("Have paths: ", accelPaths, magPaths, gyroPaths);
 
 // --- Sensor readers ---
 function readVectorSample(paths, scaleDiv) {
@@ -246,7 +255,6 @@ function fs_existsSync(p) {
     }
 }
 
-
 function emulate_accel() {
     let v = readVectorSample(accelPaths, 10);
     v.x = -v.x;
@@ -261,6 +269,15 @@ function emulate_mag() {
     let v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
     v.y = -v.y;
     let d = bangle_on_map['mag'];
+    if (d) {
+	d(v);
+    }
+}
+
+function emulate_gyro() {
+    if (!gyroPaths) return;
+    let v = readVectorSample(gyroPaths, 1);
+    let d = bangle_on_map['gyro'];
     if (d) {
 	d(v);
     }
