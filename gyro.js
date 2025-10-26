@@ -6,6 +6,7 @@ function integrate(v) {
     let step = 1/20;
     x += step * v.x;
     y += step * v.y;
+    // When phone is rotated clockwise (on flat surface), z increases
     z += step * v.z;
     print(x, y, z);
 }
