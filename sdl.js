@@ -53,6 +53,8 @@ Bangle.isCharging = function () { return false; }
 Bangle.isCompassOn = function () { return false; }
 Bangle.setCompassPower = function (v) {}
 Bangle.on = bangle_on;
+Bangle.getGPSFix = function () { return emulate_gps(); }
+Bangle.getCompass = function () { return 0; }
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
@@ -292,7 +294,6 @@ function gps_parse(v) {
     let alt = NaN;
     let spd = NaN;
     let course = NaN;
-
     
     for (line of l) {
 	print("Line: ", line);
@@ -316,9 +317,10 @@ function gps_parse(v) {
 
     const v = { fix, lat, lon, alt, speed: spd, course };
          let d = bangle_on_map['gps'];
-  if (d) {
+    if (d) {
     d(v);
-  }
+    }
+    return v;
 }
 
 
@@ -333,8 +335,8 @@ function test_read() {
 }
 
 function emulate_gps() {
-s = fs.readFileSync("/tmp/delme.gnss", 'utf8');
-    gps_parse(s);
+    s = fs.readFileSync("/tmp/delme.gnss", 'utf8');
+    return gps_parse(s);
 }
 
 
