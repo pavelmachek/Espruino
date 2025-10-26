@@ -6,8 +6,7 @@ eval(require("fs").readFile("sdl.js"));
 // - Shows live rates (deg/s) and integrated angle (deg)
 // Written to be robust if 'gyro' API not present.
 
-  const CAL_SAMPLES = 20;       // samples to average for bias (keep watch still)
-  const SAMPLE_PERIOD = 50;      // ms target period for integration reporting
+  const CAL_SAMPLES = 100;       // samples to average for bias (keep watch still)
   const LOG_EVERY = 10;          // how often to log to console (in iterations)
 
   let source = null;             // 'event', 'mpu', or null
@@ -48,7 +47,7 @@ eval(require("fs").readFile("sdl.js"));
 
     if (1) {
 	// likely radians/sec -> convert
-	let f = R2D / 1000;
+	let f = 360 * R2D / 200;
       s.x *= f; s.y *= f; s.z *= f;
     }
     // else assume deg/s already
@@ -56,7 +55,8 @@ eval(require("fs").readFile("sdl.js"));
     if (calibrating) {
       bias.x += s.x; bias.y += s.y; bias.z += s.z;
       sampleCount++;
-      if (sampleCount >= CAL_SAMPLES) {
+	if (sampleCount >= CAL_SAMPLES) {
+	    // FIXME: This assumes same sample rate between calibration and run
         bias.x /= sampleCount; bias.y /= sampleCount; bias.z /= sampleCount;
         calibrating = false;
         last = {t:t, x:s.x - bias.x, y:s.y - bias.y, z:s.z - bias.z};
@@ -77,11 +77,13 @@ eval(require("fs").readFile("sdl.js"));
       last = {t:t, x:s.x - bias.x, y:s.y - bias.y, z:s.z - bias.z};
       return;
     }
-    const dt = (t - last.t); // s
+    const dt = (t - last.t) / 1000; // s
     // current bias-corrected sample
     const vx = s.x - bias.x;
     const vy = s.y - bias.y;
-    const vz = s.z - bias.z;
+      const vz = s.z - bias.z;
+      print("dt", dt);
+      
 
     angle.x += 0.5 * (last.x + vx) * dt;
     angle.y += 0.5 * (last.y + vy) * dt;
@@ -98,7 +100,9 @@ eval(require("fs").readFile("sdl.js"));
 	s = "Angles (deg):\n";
 	s += ""+angle.x.toFixed(2)+", " + angle.y.toFixed(2)+", "+angle.z.toFixed(2)+"\n";
 	s += "Rates (deg/s):\n";
-	s += ""+vx.toFixed(2)+", "+vy.toFixed(2)+", "+vz.toFixed(2);
+	s += ""+vx.toFixed(2)+", "+vy.toFixed(2)+", "+vz.toFixed(2)+"\n";
+	s += "Bias (deg/s):\n";
+	s += ""+bias.x.toFixed(2)+", "+bias.y.toFixed(2)+", "+bias.z.toFixed(2)+"\n";
 	g.drawString(s, 5, 10);
     }
 
