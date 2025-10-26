@@ -228,7 +228,7 @@ function makeRawPaths(devPath, prefix) {
 
 const accelPaths = makeRawPaths(accelDev, 'accel');
 const magPaths = magDev ? makeRawPaths(magDev, 'magn') : null;
-const gyroPaths = gyroDev ? makeRawPaths(gyroDev, 'anglval') : null;
+const gyroPaths = gyroDev ? makeRawPaths(gyroDev, 'anglvel') : null;
 
 print("Have paths: ", accelPaths, magPaths, gyroPaths);
 
