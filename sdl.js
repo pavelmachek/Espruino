@@ -282,29 +282,39 @@ function knotsToMps(knots) {
 
 function gps_parse(v) {
     l = v.split('\n');
+    let lat = NaN;
+    let lon = NaN;
+    let fix = 0
+    let alt = NaN;
+    let spd = NaN;
+    let course = NaN;
+
     
     for (line of l) {
 	print("Line: ", line);
 	if (!line.startsWith('$')) continue;
 	
+	const parts = line.split(',');
+	const type = parts[0].substring(3);
 
-    const parts = line.split(',');
-    const type = parts[0].substring(3);
-
-    if (type === 'GGA' || type === 'RMC') {
-      const lat = parseNMEACoords(parts[3], parts[4]);
-      const lon = parseNMEACoords(parts[5], parts[6]);
-      const fix = (type === 'GGA') ? parseInt(parts[6]) : (parts[2] === 'A' ? 1 : 0);
-      const alt = type === 'GGA' ? parseFloat(parts[9]) : NaN;
-      const spd = type === 'RMC' ? knotsToMps(parseFloat(parts[7])) : NaN;
-      const course = type === 'RMC' ? parseFloat(parts[8]) : NaN;
-
-      const gps = { fix, lat, lon, alt, speed: spd, course };
-      Bangle._lastGPS = gps;
-      print('gps', gps);
+	if (type === 'RMC') {
+	    lat = parseNMEACoords(parts[3], parts[4]);
+	    lon = parseNMEACoords(parts[5], parts[6]);
+	    spd = knotsToMps(parseFloat(parts[7]));
+	    course = parseFloat(parts[8]);
+	}
+	
+	if (type === 'GGA') {
+	    fix = parseInt(parts[6]);
+	    alt = parseFloat(parts[9]);
+	}
     }
-    }
+
+    const gps = { fix, lat, lon, alt, speed: spd, course };
+    Bangle._lastGPS = gps;
+    print('gps', gps);
 }
+
 
 function test_read() {
     var fd = fs.open("data.bin", "r");
