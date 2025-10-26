@@ -280,15 +280,13 @@ function knotsToMps(knots) {
   return knots * 0.514444;
 }
 
-function bad_read() {
-// --- GPS reader ---
-if (fs.existsSync(GNSS_DEVICE)) {
-  const rl = readline.createInterface({
-    input: fs.createReadStream(GNSS_DEVICE, { encoding: 'utf8' })
-  });
-
-  rl.on('line', line => {
-    if (!line.startsWith('$')) return;
+function gps_parse(v) {
+    l = v.split('\n');
+    
+    for (line of l) {
+	print("Line: ", line);
+	if (!line.startsWith('$')) continue;
+	
 
     const parts = line.split(',');
     const type = parts[0].substring(3);
@@ -303,12 +301,9 @@ if (fs.existsSync(GNSS_DEVICE)) {
 
       const gps = { fix, lat, lon, alt, speed: spd, course };
       Bangle._lastGPS = gps;
-      emit('gps', gps);
+      print('gps', gps);
     }
-  });
-} else {
-  console.error('No GNSS device found at', GNSS_DEVICE);
-}
+    }
 }
 
 function test_read() {
@@ -321,8 +316,10 @@ function test_read() {
     }
 }
 
-print(fs);
-print(fs.openFile("/etc/passwd"));
+s = fs.readFileSync("/tmp/delme.gnss", 'utf8');
+gps_parse(s);
+
+
 //f = E.openFile("/etc/passwd")
 //f.read(123)?
 //test_read();
