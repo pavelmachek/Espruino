@@ -59,6 +59,8 @@ WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
 E.on("touch", onTouch);
+const BTN1 = 1;
+
 //initWindow(1024, 768);
 //initWindow(240, 240);
 initWindow(360, 660);
