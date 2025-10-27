@@ -14,6 +14,7 @@ const CAL_SAMPLES = 100;       // samples to average for bias (keep watch still)
 //                         -0.69, 1.62, 0.16
 // Long calibration:       -0.72, 1.49, 0.00
 //             .. on flat  -0.79, 1.48, 0.10
+// later that day:         -0.48, 1.61, 0.34
 
   const LOG_EVERY = 10;          // how often to log to console (in iterations)
 
