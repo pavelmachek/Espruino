@@ -6,7 +6,15 @@ eval(require("fs").readFile("sdl.js"));
 // - Shows live rates (deg/s) and integrated angle (deg)
 // Written to be robust if 'gyro' API not present.
 
-  const CAL_SAMPLES = 100;       // samples to average for bias (keep watch still)
+// This works _way_ better with lower sampling rate on the gyro.
+// echo 14 > /sys/bus/iio/devices/iio\:device1/sampling_frequency
+
+const CAL_SAMPLES = 100;       // samples to average for bias (keep watch still)
+// Calibration seems to be -0.69, 1.55, -0.08
+//                         -0.69, 1.62, 0.16
+// Long calibration:       -0.72, 1.49, 0.00
+//             .. on flat  -0.79, 1.48, 0.10
+
   const LOG_EVERY = 10;          // how often to log to console (in iterations)
 
   let source = null;             // 'event', 'mpu', or null
@@ -46,9 +54,8 @@ eval(require("fs").readFile("sdl.js"));
     ['x','y','z'].forEach(k=>{ if (!isFinite(s[k])) s[k]=0; });
 
     if (1) {
-	// likely radians/sec -> convert
-	let f = 360 * R2D / 200;
-      s.x *= f; s.y *= f; s.z *= f;
+	let f = 60;
+	s.x *= f; s.y *= f; s.z *= f;
     }
     // else assume deg/s already
 
