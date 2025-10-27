@@ -105,6 +105,9 @@ function draw() {
     //const hue = clamp((toDegrees(tilt.roll)+90)/180,0,1);
     //g.setColor(hue, 0.7, 1-hue);
 
+    g.setColor(0, 0, 0);
+    drawDot(tilt.roll, radius);
+    
     g.setColor(1, 0, 0);
     drawDot(tilt.roll, mag.x+230);
     g.setColor(0, 1, 0);
