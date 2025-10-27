@@ -57,6 +57,7 @@ Bangle.project = bangle_project;
 Bangle.isCharging = function () { return false; }
 Bangle.isCompassOn = function () { return false; }
 Bangle.setCompassPower = function (v) {}
+Bangle.getAccel = function (v) { return emulate_accel(); }
 Bangle.on = bangle_on;
 Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return 0; }
@@ -262,6 +263,7 @@ function emulate_accel() {
     if (d) {
 	d(v);
     }
+    return v;
 }
 
 function emulate_mag() {
@@ -281,6 +283,7 @@ function emulate_gyro() {
     if (d) {
 	d(v);
     }
+    return v;
 }
 
 // GPS -----------------------------------------------------------------------------------

@@ -29,17 +29,17 @@ const centerY = g.getHeight()/2;
 const radius = Math.min(centerX, centerY) - 10;
 
 // Utility functions
-function toDegrees(r){return r180/Math.PI;}
+function toDegrees(r){return r * 180/Math.PI;}
 function toRadians(d){return Math.PI/180;}
 function clamp(v,min,max){return v<min?min:v>max?max:v;}
-function mag(v){return Math.sqrt(v.xv.x+v.yv.y+v.z*v.z);}
+function magnit(v){return Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z);}
 
 // Rotation from accelerometer (tilt)
 function getTilt(acc){
-const norm = mag(acc);
+const norm = magnit(acc);
 if (norm===0) return {pitch:0, roll:0};
 const ax = acc.x/norm, ay = acc.y/norm, az = acc.z/norm;
-const pitch = Math.atan2(-ax, Math.sqrt(ayay+azaz));
+const pitch = Math.atan2(-ax, Math.sqrt(ay*ay+az*az));
 const roll = Math.atan2(ay, az);
 return {pitch, roll};
 }
@@ -50,11 +50,11 @@ function rotateVector(v, pitch, roll){
 const cp=Math.cos(pitch), sp=Math.sin(pitch);
 const cr=Math.cos(roll), sr=Math.sin(roll);
 const x1 = v.x;
-const y1 = crv.y - srv.z;
-const z1 = srv.y + crv.z;
-const x2 = cpx1 + spz1;
+const y1 = cr*v.y - sr*v.z;
+const z1 = sr*v.y + cr*v.z;
+const x2 = cp*x1 + sp*z1;
 const y2 = y1;
-const z2 = -spx1 + cpz1;
+const z2 = -sp*x1 + cp*z1;
 return {x:x2,y:y2,z:z2};
 }
 
@@ -83,10 +83,10 @@ let samples = [];
 drawPolarAxes();
 
 Bangle.setCompassPower(1);
-Bangle.setAccelPower(1);
 
 setInterval(function(){
-const acc = Bangle.getAccel();
+    const acc = Bangle.getAccel();
+    print("Acc:", acc);
 const mag = Bangle.getCompass();
 
 const tilt = getTilt(acc);
@@ -110,4 +110,4 @@ setWatch(()=>{
 g.clear();
 samples=[];
 drawPolarAxes();
-}, BTN, {repeat:true, edge:"rising"});
+}, BTN1, {repeat:true, edge:"rising"});
