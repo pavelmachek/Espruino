@@ -92,8 +92,8 @@ function drawDot(heading, r) {
     g.fillCircle(x,y,2);
 
 }
- 
-setInterval(function(){
+
+function draw() {
     const acc = Bangle.getAccel();
     const mag = Bangle.getCompass();
 
@@ -107,7 +107,9 @@ setInterval(function(){
     g.setColor(hue, 0.7, 1-hue);
     
     drawDot(heading, fieldMag*10);
-},200);
+}
+ 
+setInterval(draw,200);
 
 setWatch(()=>{
     g.clear();
