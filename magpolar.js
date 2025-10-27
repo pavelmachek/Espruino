@@ -83,6 +83,16 @@ let samples = [];
 drawPolarAxes();
 Bangle.setCompassPower(1);
 
+function drawDot(heading, r) {
+    // Map heading and field magnitude to polar coordinates
+    const r = clamp(r, 0, radius);
+    const x = centerX + Math.sin(heading)*r;
+    const y = centerY - Math.cos(heading)*r;
+
+    g.fillCircle(x,y,2);
+
+}
+ 
 setInterval(function(){
     const acc = Bangle.getAccel();
     const mag = Bangle.getCompass();
@@ -92,16 +102,11 @@ setInterval(function(){
     const heading = headingFromMag(corrected);
     const fieldMag = mag.mag;
 
-    // Map heading and field magnitude to polar coordinates
-    const r = clamp(fieldMag*10, 0, radius);
-    const x = centerX + Math.sin(heading)*r;
-    const y = centerY - Math.cos(heading)*r;
-
     // Color by roll angle
     const hue = clamp((toDegrees(tilt.roll)+90)/180,0,1);
     g.setColor(hue, 0.7, 1-hue);
-    g.fillCircle(x,y,2);
-
+    
+    drawDot(heading, fieldMag*10);
 },200);
 
 setWatch(()=>{
