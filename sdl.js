@@ -60,7 +60,7 @@ Bangle.setCompassPower = function (v) {}
 Bangle.getAccel = function (v) { return emulate_accel(); }
 Bangle.on = bangle_on;
 Bangle.getGPSFix = function () { return emulate_gps(); }
-Bangle.getCompass = function () { return 0; }
+Bangle.getCompass = function () { return emulate_mag(); }
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
@@ -268,12 +268,14 @@ function emulate_accel() {
 
 function emulate_mag() {
     if (!magPaths) return;
-    let v = readVectorSample(magPaths, .01); // magnetometer scaling often in uT already
+    let v = readVectorSample(magPaths, .01);
     v.y = -v.y;
+    /* FIXME: We should also return values after calibration in dx/dy/dz and heading */
     let d = bangle_on_map['mag'];
     if (d) {
 	d(v);
     }
+    return v;
 }
 
 function emulate_gyro() {

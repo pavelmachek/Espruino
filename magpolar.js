@@ -86,10 +86,13 @@ Bangle.setCompassPower(1);
 
 setInterval(function(){
     const acc = Bangle.getAccel();
-    print("Acc:", acc);
     const mag = Bangle.getCompass();
 
     const tilt = getTilt(acc);
+    print(mag);
+    print(toDegrees(tilt.pitch));
+    return;
+    
     const corrected = rotateVector(mag, tilt.pitch, tilt.roll);
     const heading = headingFromMag(corrected);
     const fieldMag = mag.mag;
