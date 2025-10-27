@@ -90,7 +90,6 @@ function drawDot(heading, r) {
     const y = centerY - Math.cos(heading)*r;
 
     g.fillCircle(x,y,2);
-
 }
 
 function draw() {
@@ -103,10 +102,16 @@ function draw() {
     const fieldMag = mag.mag;
 
     // Color by roll angle
-    const hue = clamp((toDegrees(tilt.roll)+90)/180,0,1);
-    g.setColor(hue, 0.7, 1-hue);
-    
-    drawDot(heading, fieldMag*10);
+    //const hue = clamp((toDegrees(tilt.roll)+90)/180,0,1);
+    //g.setColor(hue, 0.7, 1-hue);
+
+    g.setColor(1, 0, 0);
+    drawDot(tilt.roll, mag.x+230);
+    g.setColor(0, 1, 0);
+    drawDot(tilt.roll, mag.y);
+    g.setColor(0, 0, 1);
+    drawDot(tilt.roll, mag.z-420);
+    print(tilt.roll, mag.x, mag.y, mag.z)
 }
  
 setInterval(draw,200);
