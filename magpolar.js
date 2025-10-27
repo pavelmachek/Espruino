@@ -21,7 +21,7 @@ Color-codes magnetometer points by tilt (optional visual cue).
 */
 
 g.clear();
-g.setFont("6x8",1);
+g.setFont("Vector",32);
 g.setColor(1,0,0);
 
 const centerX = g.getWidth()/2;
@@ -30,7 +30,7 @@ const radius = Math.min(centerX, centerY) - 10;
 
 // Utility functions
 function toDegrees(r){return r * 180/Math.PI;}
-function toRadians(d){return Math.PI/180;}
+function toRadians(d){return d * Math.PI/180;}
 function clamp(v,min,max){return v<min?min:v>max?max:v;}
 function magnit(v){return Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z);}
 
@@ -81,7 +81,6 @@ function drawPolarAxes(){
 
 let samples = [];
 drawPolarAxes();
-
 Bangle.setCompassPower(1);
 
 setInterval(function(){
@@ -89,10 +88,6 @@ setInterval(function(){
     const mag = Bangle.getCompass();
 
     const tilt = getTilt(acc);
-    print(mag);
-    print(toDegrees(tilt.pitch));
-    return;
-    
     const corrected = rotateVector(mag, tilt.pitch, tilt.roll);
     const heading = headingFromMag(corrected);
     const fieldMag = mag.mag;
