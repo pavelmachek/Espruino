@@ -61,6 +61,8 @@ Bangle.getAccel = function (v) { return emulate_accel(); }
 Bangle.on = bangle_on;
 Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return emulate_mag(); }
+Puck = {}
+Puck.light = function () { return readFloatFile(lightDev+"/in_illuminance_raw" / 4096); }
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
@@ -179,6 +181,16 @@ function fs_existsSync(p) {
 }
 
 // --- Generic sensor search ---
+
+function findAnyDevice(file) {
+    for (const devPath of listIIODeviceDirs()) {
+	const x = path_join(devPath, file);
+	if (fs_existsSync(x))
+	    return devPath;
+    }
+    return null;
+}
+
 function findDevice(prefix) {
   for (const devPath of listIIODeviceDirs()) {
     const x = path_join(devPath, `in_${prefix}_x_raw`);
@@ -195,6 +207,7 @@ function findDevice(prefix) {
 const accelDev = findDevice('accel');
 const magDev = findDevice('magn');
 const gyroDev = findDevice('anglvel');
+const lightDev = findAnyDevice('in_illuminance_raw');
 
 if (!accelDev) {
   console.error('No accelerometer device found under', IIO_BASE);
