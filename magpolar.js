@@ -40,7 +40,7 @@ function getTilt(acc){
     if (norm===0) return {pitch:0, roll:0};
     const ax = acc.x/norm, ay = acc.y/norm, az = acc.z/norm;
     const pitch = Math.atan2(-ax, Math.sqrt(ay*ay+az*az));
-    const roll = Math.atan2(ay, az);
+    const roll = Math.atan2(ax, ay);
     return {pitch, roll};
 }
 
@@ -107,6 +107,8 @@ function draw() {
 
     g.setColor(0, 0, 0);
     drawDot(tilt.roll, radius);
+
+    print(acc.x, acc.y, tilt.roll);
     
     g.setColor(1, 0, 0);
     drawDot(tilt.roll, mag.x+230);
@@ -114,7 +116,7 @@ function draw() {
     drawDot(tilt.roll, mag.y);
     g.setColor(0, 0, 1);
     drawDot(tilt.roll, mag.z-420);
-    print(tilt.roll, mag.x, mag.y, mag.z)
+    //print(tilt.roll, mag.x, mag.y, mag.z)
 }
  
 setInterval(draw,200);

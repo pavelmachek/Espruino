@@ -1,6 +1,7 @@
 // --- Linux - Bangle glue
 
 // Librem5:
+// (Hmm, gyro actually works better with lower sample rate)
 // echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
 // echo 119 | sudo tee /sys/bus/iio/devices/iio:device2/sampling_frequency
 // echo 80 | sudo tee /sys/bus/iio/devices/iio:device3/sampling_frequency
@@ -62,7 +63,7 @@ Bangle.on = bangle_on;
 Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return emulate_mag(); }
 Puck = {}
-Puck.light = function () { return readFloatFile(lightDev+"/in_illuminance_raw" / 4096); }
+Puck.light = function () { return readFloatFile(lightDev+"/in_illuminance_raw") / 4096; }
 WIDGETS = false;
 E = {};
 E.getBattery = function () { return 100; }
