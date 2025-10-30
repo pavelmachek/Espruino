@@ -39,7 +39,7 @@ function draw() {
   g.drawString("Max: " + max.toFixed(3), 0, 48);
 
   // Draw graph
-  let y0 = 100, h = 60, w = g.getWidth();
+    let y0 = g.getHeight() - 10, h = g.getHeight()/2, w = g.getWidth();
   g.drawLine(0, y0, w, y0);
   for (let i = 0; i < history.length; i++) {
     let x = i * w / historyLen;
