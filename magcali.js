@@ -114,12 +114,12 @@ function drawAccel(g, width, height) {
 function drawCalibBox(g, width, height) {
   let scale = 0.15;
   let boxW = (vMax[0] - vMin[0]) * scale;
-  let boxH = (vMax[1] - vMin[1]) * scale;
+  let boxH = -(vMax[1] - vMin[1]) * scale;
   let boxX = (vMin[0] - vFirst[0]) * scale + width / 2;
-  let boxY = (vMin[1] - vFirst[1]) * scale + height / 2;
+  let boxY = -(vMin[1] - vFirst[1]) * scale + height / 2;
   
   let x = (v[0] - vFirst[0]) * scale + width / 2;
-  let y = (v[1] - vFirst[1]) * scale + height / 2;
+  let y = -(v[1] - vFirst[1]) * scale + height / 2;
   
   //print("box:", boxX, boxY, boxX + boxW, boxY + boxH, x, y);
 
