@@ -282,7 +282,7 @@ function emulate_accel() {
 
 function emulate_mag() {
     if (!magPaths) return;
-    let v = readVectorSample(magPaths, .01);
+    let v = readVectorSample(magPaths, 0.001);
     v.y = -v.y;
     /* FIXME: We should also return values after calibration in dx/dy/dz and heading */
     let d = bangle_on_map['mag'];
