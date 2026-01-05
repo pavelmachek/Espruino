@@ -23,3 +23,16 @@ Please review. There's probably better way to do this, but I'll need pointers.
 sudo apt install libsdl1.2-dev
 
 DISPLAY=:1 bin/espruino bench.js
+
+--
+
+norm:
+
+pavel@duo:~/g/bwatch/Espruino$ ls -al bin/espruino 
+-rwxr-xr-x 1 pavel pavel 4759696 Jan  5 13:47 bin/espruino
+pavel@duo:~/g/bwatch/Espruino$ ls -alh bin/espruino 
+-rwxr-xr-x 1 pavel pavel 4.6M Jan  5 13:51 bin/espruino
+pavel@duo:~/g/bwatch/Espruino$ ldd bin/espruino | wc -l
+50
+
+make BOARD=MIN_LINUX
