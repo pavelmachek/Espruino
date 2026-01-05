@@ -21,14 +21,8 @@ info = {
  'binary_name' : 'espruino',
  'build' : {
    'libraries' : [
-     'NET',
-     'TENSORFLOW',
      'GRAPHICS',
      'FILESYSTEM',
-     'CRYPTO','SHA256','SHA512',
-     'AES_CCM',
-     'TLS',
-     'TELNET',
    ],
    'makefile' : [
 #     'DEFINES+=-DFLASH_64BITS_ALIGNMENT=1', # For testing 64 bit flash writes
@@ -36,7 +30,7 @@ info = {
      'DEFINES+=-DESPR_UNICODE_SUPPORT=1',
      'DEFINES+=-DUSE_FONT_6X8 -DGRAPHICS_PALETTED_IMAGES -DGRAPHICS_ANTIALIAS -DESPR_PBF_FONTS',
      'DEFINES+=-DSPIFLASH_BASE=0 -DSPIFLASH_LENGTH=FLASH_SAVED_CODE_LENGTH', # For Testing Flash Strings
-     'DEFINES+=-DEMULATED -DUSE_LCD_SDL -DESPR_GRAPHICS_INTERNAL -DMENU',
+     'DEFINES+=-DEMULATED -DESPR_GRAPHICS_INTERNAL -DMENU',
      'LINUX=1',
      'JSMODULESOURCES += libs/js/banglejs/locale.min.js',
      'JSMODULESOURCES += libs/js/banglejs/Layout.min.js',

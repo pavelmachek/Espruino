@@ -34,7 +34,7 @@
 # ESPRUINO_WRAPPERSOURCES=jswrap_x.c
 #                         # Compile in a wrapper file to the build (with JS functions in). WRAPPERSOURCES can be used too, but this adds the files to the END of the sources list
 PYTHON=python3          # The python command used for this build
-USE_LCD_SDL=1
+#USE_LCD_SDL=1
 #
 # WIZNET=1                # If compiling for a non-linux target that has internet support, use WIZnet W5500 support
 # W5100=1                 # Compile for WIZnet W5100 (not W5500)
@@ -827,7 +827,7 @@ else
 compile=$(CC) $(CFLAGS_C_COMPILER) $(CFLAGS) $(shell ${REALPATH} --relative-to $(shell pwd) $<) -o $@
 endif
 
-link=$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+link=$(LD) $(LDFLAGS) -static -o $@ $(OBJS) $(LIBS)
 
 # note: link is ignored for the ESP8266
 obj_dump=$(OBJDUMP) -x -S $(PROJ_NAME).elf > $(PROJ_NAME).lst

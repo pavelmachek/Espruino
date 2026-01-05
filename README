@@ -35,4 +35,5 @@ pavel@duo:~/g/bwatch/Espruino$ ls -alh bin/espruino
 pavel@duo:~/g/bwatch/Espruino$ ldd bin/espruino | wc -l
 50
 
+make clean!
 make BOARD=MIN_LINUX
