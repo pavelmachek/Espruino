@@ -1,5 +1,7 @@
 // --- Linux - Bangle glue
 
+var use_sdl = 1;
+
 // Librem5:
 // (Hmm, gyro actually works better with lower sample rate)
 // echo 80 | sudo tee /sys/bus/iio/devices/iio:device1/sampling_frequency
@@ -36,6 +38,7 @@ function bangle_setUI(map) {
 
 function initWindow(x, y) {
   Bangle.appRect = [ 0, 0, x, y ];
+  
   g = Graphics.createSDL(x, y, 16);
   g.setColor(1,1,1);
   g.fillRect(0, 0, x, y);
@@ -167,8 +170,10 @@ function readFloatFile(filePath) {
 function path_join(a, b) { return a + '/' + b; }
 
 function listIIODeviceDirs() {
-  return fs.readdirSync(IIO_BASE)
-           .filter(f => f.startsWith('iio:device'))
+  d = fs.readdirSync(IIO_BASE);
+  if (!d)
+    return {};
+  return d.filter(f => f.startsWith('iio:device'))
            .map(f => path_join(IIO_BASE, f));
 }
 
@@ -212,7 +217,7 @@ const lightDev = findAnyDevice('in_illuminance_raw');
 
 if (!accelDev) {
   console.error('No accelerometer device found under', IIO_BASE);
-  process.exit(1);
+  //process.exit(1);
 }
 if (!magDev) {
   console.warn('No magnetometer device found under', IIO_BASE);
