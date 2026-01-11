@@ -1,6 +1,6 @@
 // --- Linux - Bangle glue
 
-var use_sdl = 1;
+var use_sdl = 0;
 
 // Librem5:
 // (Hmm, gyro actually works better with lower sample rate)
@@ -45,6 +45,26 @@ function initWindow(x, y) {
   g.flip = print;
 }
 
+function initDirect() {
+  x = 540;
+  y = 960;
+  g = Graphics.createArrayBuffer(x, y, 24,
+                                 { zigzag : false, vertical_byte : false,
+                                   msb : false, color_order: 'rgb' });
+  g.setColor(1,1,1);
+  g.fillRect(0, 0, x, y);
+  g.flip = saveDirect;
+  g.flip();
+}
+
+function saveDirect() {
+  const filename = "/tmp/delme.bin";
+  require("fs").writeFile(filename, g.buffer, err => {
+    if (err) console.log("Write error:", err);
+    else console.log("Saved", filename);
+  });
+}
+
 function onTouch(drag) {
   let d = bangle_on_map['drag'];
   if (d) {
@@ -73,9 +93,13 @@ E.getBattery = function () { return 100; }
 E.on("touch", onTouch);
 const BTN1 = 1;
 
-//initWindow(1024, 768);
-//initWindow(240, 240);
-initWindow(360, 660);
+if (use_sdl) {
+  //initWindow(1024, 768);
+  //initWindow(240, 240);
+  initWindow(360, 660);
+} else {
+  initDirect();
+}
 
 function backdoor(x, y) { //return peek8(x);
 }
