@@ -1,3 +1,5 @@
+#!bin/espruino
+
 eval(require("fs").readFile("sdl.js"));
 
 function touchHandler(d) {
