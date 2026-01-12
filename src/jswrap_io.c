@@ -71,9 +71,11 @@ static int Input_Poll(void) {
        ssize_t n = read(fds[0], &ev, sizeof(ev));
        //printf("Input: %d bytes\n", n);
        /* lctrl */
-       if (ev.type == EV_KEY && ev.code == 29) {
+       if (ev.type == EV_KEY) {
+	       if (ev.code == 29 || ev.code == 42 || ev.code == 56) {
 	       printf("Touch %s\n", ev.value ? "pressed" : "released");
 	       return ev.value * 1024 | ev.code;
+	       }
        }
        fflush(stdout);
        return 0;
