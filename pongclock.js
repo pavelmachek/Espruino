@@ -300,9 +300,10 @@ var ball = new Ball(true);
 left.x = 20;
 right.x = width - 20;
 
-left.scored();
-right.scored();
-
+function auto_game() {
+  left.scored();
+  right.scored();
+  
 Bangle.on("lock", (on) => {
   //console.log(on);
   if (!settings.playLocked) {
@@ -322,6 +323,10 @@ if (!settings.playLocked && Bangle.isLocked()) {
 } else {
   update();
 }
+
+}
+
+auto_game();
 
 /*
 //local testing
