@@ -45,6 +45,10 @@ function initWindow(x, y) {
   g.flip = print;
 }
 
+function initInput() {
+  peek8(16);
+}
+
 function initDirect() {
   x = 540;
   y = 960;
@@ -98,6 +102,7 @@ if (use_sdl) {
   //initWindow(240, 240);
   initWindow(360, 660);
 } else {
+  initInput();
   initDirect();
 }
 

@@ -47,9 +47,39 @@ static unsigned int SDL_Backdoor(int x) {
 
 #define USE_RAW_INPUT
 #ifdef USE_RAW_INPUT
+#include <unistd.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <linux/input.h>
+#include <fcntl.h>
+
+int fds[16];
+
+static int Input_Init(void) {
+       fds[0] = open("/dev/input/event13", O_RDONLY);
+       if (fds[0] < 0) {
+	       printf("Can't output event; %m\n");
+	       exit(1);
+       }	       
+       fcntl(fds[0], F_SETFL, O_NONBLOCK);
+}
+
+static int Input_Poll(void) {
+       struct input_event ev;
+       ssize_t n = read(fds[0], &ev, sizeof(ev));
+       printf("Input: %d bytes\n", n);
+       /* lctrl */
+       if (ev.type == EV_KEY && ev.code == 29) {
+       printf("Touch %s\n", ev.value ? "pressed" : "released");
+       }
+       fflush(stdout);
+}
+
 static unsigned int Input_Backdoor(int x) {
   switch (x) {
-  case 16: return 0;
+  case 16: Input_Init(); return 0;
+  case 17: Input_Poll(); return 0;
   }
   printf("Bad backdoor call %d\n", x); fflush(stdout);
   return -1;
@@ -150,20 +180,20 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 }
 
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
+#ifdef USE_RAW_INPUT
+	{
+	printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
+	if (wordSize != 1) return (void *) ~0;
+	uint32_t ret = Input_Backdoor(addr);
+	return jsvNewFromLongInteger(ret);
+	}
+#endif
 #ifdef USE_LCD_SDL
 	/* HERE */
 	{
 	if (wordSize != 1) return (void *) ~0;
 	uint32_t ret = SDL_Backdoor(addr);
 	//printf("io_peek %x %x -> %x\n", addr, wordSize, ret);  fflush(stdout);
-	return jsvNewFromLongInteger(ret);
-	}
-#endif
-#ifdef USE_RAW_INPUT
-	{
-	printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
-	if (wordSize != 1) return (void *) ~0;
-	uint32_t ret = Input_Backdoor(addr);
 	return jsvNewFromLongInteger(ret);
 	}
 #endif
