@@ -43,6 +43,12 @@ function initWindow(x, y) {
   g.setColor(1,1,1);
   g.fillRect(0, 0, x, y);
   g.flip = print;
+
+  /*
+  g.theme = {}
+  g.theme.bg = (1, 0, 0)
+  g.theme.fg = (0, 1, 1)
+  */
 }
 
 function initInput() {
@@ -62,11 +68,12 @@ function initDirect() {
 }
 
 function saveDirect() {
-  const filename = "/dev/fb0";
+  const filename = "/tmp/delme.fb0";
   require("fs").writeFile(filename, g.buffer, err => {
     if (err) console.log("Write error:", err);
     else console.log("Saved", filename);
   });
+  peek8(18);
 }
 
 function onTouch(drag) {

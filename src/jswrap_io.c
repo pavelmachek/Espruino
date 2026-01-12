@@ -81,10 +81,185 @@ static int Input_Poll(void) {
        return 0;
 }
 
+/*
+
+Give me C code. It should take 8bpp, x times y file /tmp/delme.fb0, replace each pixel with 3x3 big "pixel", and write result to /dev/fb0
+
+Assume rgb332 input.
+*/
+
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <fcntl.h> 
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+#include <string.h>
+
+/* ---------- RGB332 -> BGR888 ---------- */
+
+static inline void rgb332_to_bgr888(uint8_t p, uint8_t out[3])
+{
+    uint8_t r = (p >> 5) & 0x07;
+    uint8_t g = (p >> 2) & 0x07;  
+    uint8_t b =  p       & 0x03;
+        
+    /* Expand to 8 bits (bit replication) */
+    r = (r << 5) | (r << 2) | (r >> 1);
+    g = (g << 5) | (g << 2) | (g >> 1);
+    b = (b << 6) | (b << 4) | (b << 2) | b;
+
+    /* BGR order */
+    out[0] = b;    
+    out[1] = g;      
+    out[2] = r;
+}
+
+/* ---------- Read input ---------- */
+
+uint8_t *read_rgb332(const char *path, int w, int h)
+{
+    size_t size = w * h;
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        perror("open input");
+        return NULL;
+    }
+    
+    uint8_t *buf = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+    close(fd);
+    
+    if (buf == MAP_FAILED) {
+        perror("mmap input");
+        return NULL;
+    }
+
+    return buf;
+}
+
+/* ---------- Convert + scale ---------- */
+    
+uint8_t *convert_scale_rgb332_to_bgr888(
+    const uint8_t *in,
+    int in_w, int in_h,
+    int scale,
+    int *out_w, int *out_h)
+{    
+    *out_w = in_w * scale;
+    *out_h = in_h * scale;
+
+    size_t out_size = (*out_w) * (*out_h) * 3;
+    uint8_t *out = malloc(out_size);
+    if (!out) {
+        perror("malloc output");
+        return NULL;
+    }
+
+    for (int y = 0; y < in_h; y++) {
+        for (int x = 0; x < in_w; x++) {
+            uint8_t bgr[3];
+            rgb332_to_bgr888(in[y * in_w + x], bgr);
+    
+            for (int dy = 0; dy < scale; dy++) {
+                uint8_t *row =
+                    out + ((y * scale + dy) * (*out_w) + x * scale) * 3;
+
+                for (int dx = 0; dx < scale; dx++) {
+                    memcpy(row + dx * 3, bgr, 3);
+                }
+            }
+        }
+    }
+    
+    return out;
+}
+     
+/* ---------- Write to framebuffer ---------- */
+    
+int write_bgr888_to_fb(const uint8_t *img, int w, int h)
+{
+    int fd = open("/dev/fb0", O_RDWR);
+    if (fd < 0) {
+        perror("open fb");
+        return -1;
+    }
+
+    struct fb_var_screeninfo vinfo;
+    struct fb_fix_screeninfo finfo;
+                 
+    if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) ||
+        ioctl(fd, FBIOGET_FSCREENINFO, &finfo)) {
+        perror("fb ioctl");
+        close(fd);
+        return -1;
+    }
+     
+    if (vinfo.bits_per_pixel != 24) {
+        fprintf(stderr, "Framebuffer must be 24bpp BGR888 (got %d)\n",
+                vinfo.bits_per_pixel);
+        close(fd);
+        return -1;
+    }
+        
+    if (w > (int)vinfo.xres || h > (int)vinfo.yres) {
+        fprintf(stderr, "Image does not fit framebuffer\n");
+        close(fd);
+        return -1;
+    }
+                 
+    uint8_t *fb = mmap(NULL, finfo.smem_len,     
+                       PROT_READ | PROT_WRITE,   
+                       MAP_SHARED, fd, 0);
+    close(fd);    
+        
+    if (fb == MAP_FAILED) {
+        perror("mmap fb");
+        return -1;
+    }
+                
+    /* Clear */   
+    memset(fb, 0, finfo.smem_len);
+     
+    for (int y = 0; y < h; y++) {
+        memcpy(fb + y * finfo.line_length,
+               img + y * w * 3,
+               w * 3);
+    }
+     
+    munmap(fb, finfo.smem_len);
+    return 0;
+}
+                       
+int convert_rgb(int w, int h)
+{       
+    uint8_t *in = read_rgb332("/tmp/delme.fb0", w, h);
+    if (!in)
+        return 1; 
+     
+    int out_w, out_h;
+    uint8_t *out = convert_scale_rgb332_to_bgr888(
+        in, w, h, 3, &out_w, &out_h);
+    if (!out)
+        return 1;
+        
+    if (write_bgr888_to_fb(out, out_w, out_h))
+        return 1;     
+     
+    munmap(in, w * h);
+    free(out);
+
+    return 0;
+}                      
+
 static unsigned int Input_Backdoor(int x) {
   switch (x) {
   case 16: return Input_Init();
   case 17: return Input_Poll();
+  case 18: return convert_rgb(540/3, 960/3);
   }
   printf("Bad backdoor call %d\n", x); fflush(stdout);
   return -1;
