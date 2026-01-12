@@ -2,10 +2,10 @@
 
 eval(require("fs").readFile("sdl.js"));
 
-g.clear();
-g.setColor(0, 0, 0);
-g.setFont("Vector", 20);
-g.drawString("Press buttons", 20, 100);
+g.reset().clear();
+g.setColor(1, 0, 0);
+g.setFont("Vector", 40);
+g.drawString("Press buttons", 20, 30);
 g.flip();
 
 // button: 1,2,3  (BTN1, BTN2, BTN3)

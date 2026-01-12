@@ -54,7 +54,7 @@ function initDirect() {
   y = 960;
   g = Graphics.createArrayBuffer(x, y, 24,
                                  { zigzag : false, vertical_byte : false,
-                                   msb : false, color_order: 'rgb' });
+                                   msb : false, color_order: 'bgr' });
   g.setColor(1,1,1);
   g.fillRect(0, 0, x, y);
   g.flip = saveDirect;
@@ -62,7 +62,7 @@ function initDirect() {
 }
 
 function saveDirect() {
-  const filename = "/tmp/delme.bin";
+  const filename = "/dev/fb0";
   require("fs").writeFile(filename, g.buffer, err => {
     if (err) console.log("Write error:", err);
     else console.log("Saved", filename);
@@ -344,6 +344,10 @@ function emulate_gyro() {
 
 function emulate_button() {
   let d = bangle_on_map['button'];
+  // On S4 mini:
+  // vol up: 115
+  // vol down: 114
+  // home: 172
   if (d) {
     let r = peek8(17);
     if (r) {
