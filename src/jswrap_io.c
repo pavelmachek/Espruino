@@ -260,6 +260,12 @@ static unsigned int Input_Backdoor(int x) {
   case 16: return Input_Init();
   case 17: return Input_Poll();
   case 18: return convert_rgb(540/3, 960/3);
+  case 19:
+#ifdef USE_LCD_SDL
+	  return 1;
+#else
+	  return 0;
+#endif
   }
   printf("Bad backdoor call %d\n", x); fflush(stdout);
   return -1;
@@ -361,7 +367,7 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 #ifdef USE_RAW_INPUT
-	{
+	if (addr > 15) {
  //printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
 	if (wordSize != 1) return (void *) ~0;
 	uint32_t ret = Input_Backdoor(addr);

@@ -1,6 +1,6 @@
 // --- Linux - Bangle glue
 
-var use_sdl = 0;
+var use_sdl = peek8(19);
 
 // Librem5:
 // (Hmm, gyro actually works better with lower sample rate)
