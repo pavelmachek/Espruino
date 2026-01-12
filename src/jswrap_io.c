@@ -63,23 +63,26 @@ static int Input_Init(void) {
 	       exit(1);
        }	       
        fcntl(fds[0], F_SETFL, O_NONBLOCK);
+       return 0;
 }
 
 static int Input_Poll(void) {
        struct input_event ev;
        ssize_t n = read(fds[0], &ev, sizeof(ev));
-       printf("Input: %d bytes\n", n);
+       //printf("Input: %d bytes\n", n);
        /* lctrl */
        if (ev.type == EV_KEY && ev.code == 29) {
-       printf("Touch %s\n", ev.value ? "pressed" : "released");
+	       printf("Touch %s\n", ev.value ? "pressed" : "released");
+	       return ev.value * 1024 | ev.code;
        }
        fflush(stdout);
+       return 0;
 }
 
 static unsigned int Input_Backdoor(int x) {
   switch (x) {
-  case 16: Input_Init(); return 0;
-  case 17: Input_Poll(); return 0;
+  case 16: return Input_Init();
+  case 17: return Input_Poll();
   }
   printf("Bad backdoor call %d\n", x); fflush(stdout);
   return -1;
@@ -182,7 +185,7 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 #ifdef USE_RAW_INPUT
 	{
-	printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
+ //printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
 	if (wordSize != 1) return (void *) ~0;
 	uint32_t ret = Input_Backdoor(addr);
 	return jsvNewFromLongInteger(ret);

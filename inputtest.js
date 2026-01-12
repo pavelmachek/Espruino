@@ -3,5 +3,7 @@
 eval(require("fs").readFile("sdl.js"));
 
 while (1) {
-  peek8(17);
+  r = peek8(17);
+  if (r)
+    print(r);
 }
