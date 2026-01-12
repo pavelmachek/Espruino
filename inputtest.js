@@ -2,12 +2,6 @@
 
 eval(require("fs").readFile("sdl.js"));
 
-while (1) {
-  r = peek8(17);
-  if (r)
-    print(r);
-}
-
 g.clear();
 g.setColor(0, 0, 0);
 g.setFont("Vector", 20);

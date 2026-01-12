@@ -177,6 +177,10 @@ function sdl_poll() {
     if (bangle_on_map["gyro"]) {
 	emulate_gyro();
     }
+  if (!use_sdl) {
+    if (bangle_on_map["button"])
+      emulate_button();
+  }
 }
 
 // Sensors handling ------------------------------------------------------------------------------
@@ -336,6 +340,19 @@ function emulate_gyro() {
     return v;
 }
 
+// raw input
+
+function emulate_button() {
+  let d = bangle_on_map['button'];
+  if (d) {
+    let r = peek8(17);
+    if (r) {
+      print(r);
+      d(r & 1023, r > 1023);
+    }
+  }
+}
+
 // GPS -----------------------------------------------------------------------------------
 
 const GNSS_DEVICE = '/dev/gnss0';
@@ -392,7 +409,6 @@ function gps_parse(v) {
     return v;
 }
 
-
 function test_read() {
     var fd = fs.open("data.bin", "r");
     var buf = new Uint8Array(1);
@@ -410,6 +426,6 @@ function emulate_gps() {
 
 
 print("Test being loaded");
-setInterval(sdl_poll, 10);
+setInterval(sdl_poll, 100);
 
 // --- end glue
