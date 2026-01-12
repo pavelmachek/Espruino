@@ -45,6 +45,17 @@ static unsigned int SDL_Backdoor(int x) {
 }
 #endif
 
+#define USE_RAW_INPUT
+#ifdef USE_RAW_INPUT
+static unsigned int Input_Backdoor(int x) {
+  switch (x) {
+  case 16: return 0;
+  }
+  printf("Bad backdoor call %d\n", x); fflush(stdout);
+  return -1;
+}
+#endif
+
 /*JSON{
   "type"          : "function",
   "name"          : "peek8",
@@ -141,10 +152,20 @@ uint32_t _jswrap_io_peek(size_t addr, int wordSize) {
 JsVar *jswrap_io_peek(JsVarInt addr, JsVarInt count, int wordSize) {
 #ifdef USE_LCD_SDL
 	/* HERE */
-  if (wordSize != 1) return (void *) ~0;
+	{
+	if (wordSize != 1) return (void *) ~0;
 	uint32_t ret = SDL_Backdoor(addr);
 	//printf("io_peek %x %x -> %x\n", addr, wordSize, ret);  fflush(stdout);
 	return jsvNewFromLongInteger(ret);
+	}
+#endif
+#ifdef USE_RAW_INPUT
+	{
+	printf("io_peek %x %x -> %x\n", addr, wordSize, 0);  fflush(stdout);
+	if (wordSize != 1) return (void *) ~0;
+	uint32_t ret = Input_Backdoor(addr);
+	return jsvNewFromLongInteger(ret);
+	}
 #endif
   // hack for ESP8266/ESP32 where the address can be different
   size_t mappedAddr = jshFlashGetMemMapAddress((size_t)addr);
