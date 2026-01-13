@@ -19,9 +19,7 @@ Creator
 
 */
 
-
 eval(require("fs").readFile("sdl.js"));
-
 
 class Ball {
   constructor(collision) {
