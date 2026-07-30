@@ -15,18 +15,45 @@ function msg(s) {
 
 msg("uploading\ndroid");
 
+function getUrl(url, cb) {
+  const https = require("http");
+  console.log("Fetching url...");
+
+  https.get(url, (res) => {
+    let rawData = "";
+
+    // A chunk of data has been received
+    res.on("data", (chunk) => {
+      rawData += chunk;
+    });
+
+    // The whole response has been received
+    res.on("end", () => {
+      cb(rawData);
+    });
+  });
+}
+
+function BgetUrl(url, cb) {
+  Bangle.http(url).then(result => {
+    print("Got http data");
+    cb(result.resp)
+  }).catch(err => {
+    print("http\nerror");
+  });
+}
+
 function htest() {
   let url = "https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current_weather=true";
   
   msg(".oO\nhttp");
-  Bangle.http(url).then(result => {
-    let data = JSON.parse(result.resp);
+  getUrl(url, result => {
+    print("Go result", result);
+    let data = JSON.parse(result);
     let temp = data.current_weather.temperature;
     let weatherCode = data.current_weather.weathercode;
   
     msg("Temp:\n" + temp + "\nC");
-  }).catch(err => {
-    msg("http\nerror");
   });
 }
 
@@ -109,7 +136,7 @@ function setupRefreshInterval() {
 
 Bangle.on('lock', setupRefreshInterval);
 Bangle.on('GB', (s) => { msg(s); });
-//htest();
+htest();
 msg("droid\ntest\nready");
 
 // weather.js
@@ -118,26 +145,7 @@ msg("droid\ntest\nready");
 const LATITUDE = 51.5074;
 const LONGITUDE = -0.1278;
 
-const https = require("http");
 const city = "London";
-
-function getUrl(url, cb) {
-  console.log("Fetching url...");
-
-  https.get(url, (res) => {
-    let rawData = "";
-
-    // A chunk of data has been received
-    res.on("data", (chunk) => {
-      rawData += chunk;
-    });
-
-    // The whole response has been received
-    res.on("end", () => {
-      cb(rawData);
-    });
-  });
-}
 
 function printWeather(rawData) {
   const data = JSON.parse(rawData);
@@ -155,4 +163,4 @@ function getWeather() {
   getUrl(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&current_weather=true`, printWeather);
 }
 
-getWeather();
+//getWeather();
