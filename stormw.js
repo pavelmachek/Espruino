@@ -89,6 +89,15 @@ function dl_daily() {
   });
 }
 
+function dl_hourly() {
+  let url = get_url("hourly");
+  msg(".oO\ndaily");
+  BgetUrl(url, result => {
+    print("Go result", result);
+    let data = JSON.parse(result);
+  });
+}
+
 function draw() {
   g.reset().clear();
   let now = new Date();
@@ -170,7 +179,8 @@ function setupRefreshInterval() {
 
 Bangle.on('lock', setupRefreshInterval);
 Bangle.on('GB', (s) => { msg(s); });
-dl_daily();
+//dl_daily();
+dl_hourly();
 msg("droid\ntest\nready");
 
 // weather.js
