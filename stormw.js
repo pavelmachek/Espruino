@@ -112,8 +112,6 @@ Bangle.on('GB', (s) => { msg(s); });
 //htest();
 msg("droid\ntest\nready");
 
-setupRefreshInterval();
-
 // weather.js
 
 // Example coordinates for London, UK (Latitude: 51.5074, Longitude: -0.1278)
@@ -123,10 +121,8 @@ const LONGITUDE = -0.1278;
 const https = require("http");
 const city = "London";
 
-function getWeather() {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&current_weather=true`;
-
-  console.log("Fetching weather data...");
+function getUrl(url, cb) {
+  console.log("Fetching url...");
 
   https.get(url, (res) => {
     let rawData = "";
@@ -138,22 +134,25 @@ function getWeather() {
 
     // The whole response has been received
     res.on("end", () => {
-      try {
-        const data = JSON.parse(rawData);
-        const current = data.current_weather;
-
-        console.log("\n--- Current Weather ---");
-        console.log(`City          : ${city}`);
-        console.log(`Temperature   : ${current.temperature} °C`);
-        console.log(`Wind Speed    : ${current.windspeed} km/h`);
-        console.log(`Wind Direction: ${current.winddirection}°`);
-        console.log(`Time          : ${current.time}`);
-      } catch (e) {
-        console.error("Error parsing JSON:", e.message);
-      }
+      cb(rawData);
     });
-
   });
+}
+
+function printWeather(rawData) {
+  const data = JSON.parse(rawData);
+  const current = data.current_weather;
+
+  console.log("\n--- Current Weather ---");
+  console.log(`City          : ${city}`);
+  console.log(`Temperature   : ${current.temperature} °C`);
+  console.log(`Wind Speed    : ${current.windspeed} km/h`);
+  console.log(`Wind Direction: ${current.winddirection}°`);
+  console.log(`Time          : ${current.time}`);
+}
+
+function getWeather() {
+  getUrl(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&current_weather=true`, printWeather);
 }
 
 getWeather();

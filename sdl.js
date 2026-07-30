@@ -85,6 +85,37 @@ function onTouch(drag) {
   }
 }
 
+// Bangle.http(url).then(result => ...) emulation using Node's require('http') logic.
+// Usage:
+// BangleHttp("http://example.com").then(result => { ... }).catch(err => { ... });
+
+function BangleHttp(url) {
+  print("Should do http", url);
+  return new Promise((resolve, reject) => {
+    const http = require("http");
+    print("constructing promise", url);
+
+    const req = http.get(url, (res) => {
+      let rawData = "";
+
+      // A chunk of data has been received                                           
+      res.on("data", (chunk) => {
+        rawData += chunk;
+      });
+
+      // The whole response has been received                                      
+      res.on("end", () => {
+        if (0) {
+          return reject(new Error("something bad"));
+        }
+        resolve(rawData); // Fixed: changed 'data' to 'rawData'
+      });
+    }).on("error", (e) => {
+      reject(e); // Added error handling for the request itself
+    });
+  });
+}
+
 Bangle = {};
 Bangle.setGPSPower = print;
 Bangle.loadWidgets = print;
@@ -100,6 +131,7 @@ Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return emulate_mag(); }
 Bangle.isLocked = function() { return false; }
 Bangle.getHealthStatus = function() { return { steps : 1234 } }
+Bangle.http = BangleHttp;
 Puck = {}
 Puck.light = function () { return readFloatFile(lightDev+"/in_illuminance_raw") / 4096; }
 WIDGETS = false;
