@@ -83,6 +83,10 @@ function onTouch(drag) {
   if (d) {
     d(drag);
   }
+  let d = bangle_on_map['touch'];
+  if (d) {
+    d(0, drag);
+  }
 }
 
 // Bangle.http(url).then(result => ...) emulation using Node's require('http') logic.

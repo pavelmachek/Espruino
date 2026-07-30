@@ -39,7 +39,7 @@ function BgetUrl(url, cb) {
     print("Got http data");
     cb(result.resp)
   }).catch(err => {
-    print("http\nerror");
+    msg("http\nerror");
   });
 }
 
