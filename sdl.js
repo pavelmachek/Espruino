@@ -94,10 +94,10 @@ function onTouch(drag) {
 // BangleHttp("http://example.com").then(result => { ... }).catch(err => { ... });
 
 function BangleHttp(url) {
-  print("Should do http", url);
+  //print("Should do http", url);
   return new Promise((resolve, reject) => {
     const http = require("http");
-    print("constructing promise", url);
+    //print("constructing promise", url);
 
     const req = http.get(url, (res) => {
       let rawData = "";

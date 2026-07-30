@@ -3,6 +3,8 @@ eval(require("fs").readFile("sdl.js"));
 
 // Storm watch
 
+let pos = { lat : 50, lon : 14 };
+
 print("uploading droid test");
 
 function msg(s) {
@@ -12,6 +14,7 @@ function msg(s) {
   g.drawString(s, 10, 10);
   g.flip();
 }
+
 
 msg("uploading\ndroid");
 
@@ -43,17 +46,46 @@ function BgetUrl(url, cb) {
   });
 }
 
-function htest() {
-  let url = "https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current_weather=true";
-  
-  msg(".oO\nhttp");
+let cur_weather = {};
+
+function draw_weather(w) {
+  msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
+}
+
+function get_url(mode) {
+  let url = "https://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
+  if (mode == "cur")
+    return url+"&current_weather=true";
+  let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
+  let hourly = "&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
+  let today = "&forecast_days=1";
+  let past_future = "&past_days=1&forecast_days=3";
+  if (mode == "daily")
+    return url+daily+past_future;
+  if (mode == "hourly")
+    return url+hourly+today;
+}
+
+// future daily/hourly 
+// including past      https://api.open-meteo.com/v1/forecast?latitude=50&longitude=14&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m&past_days=1&forecast_days=1
+
+function dl_current() {
+  let url = get_url("cur");
+  msg(".oO\ncur");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
-    let temp = data.current_weather.temperature;
-    let weatherCode = data.current_weather.weathercode;
-  
-    msg("Temp:\n" + temp + "\nC");
+    cur_weather = data.current_weather;
+    draw_weather(cur_weather);
+  });
+}
+
+function dl_daily() {
+  let url = get_url("daily");
+  msg(".oO\ndaily");
+  BgetUrl(url, result => {
+    print("Go result", result);
+    let data = JSON.parse(result);
   });
 }
 
@@ -121,7 +153,9 @@ Bangle.on('touch', function(button, xy) {
   
   if (xy.y > yLimit) {
     if (xy.x > xLimit) {
-      htest();
+      dl_current();
+    } else {
+      draw_weather(cur_weather);
     }
   }
 });
@@ -136,7 +170,7 @@ function setupRefreshInterval() {
 
 Bangle.on('lock', setupRefreshInterval);
 Bangle.on('GB', (s) => { msg(s); });
-htest();
+dl_daily();
 msg("droid\ntest\nready");
 
 // weather.js
