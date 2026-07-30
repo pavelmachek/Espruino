@@ -38,8 +38,6 @@ function getWeather() {
       }
     });
 
-  }).on("error", (e) => {
-    console.error("Error fetching data:", e.message);
   });
 }
 
