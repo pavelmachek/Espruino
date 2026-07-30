@@ -28,6 +28,8 @@ var bangle_on_map = {}
 
 function bangle_on(event, callback) {
   bangle_on_map[event] = callback;
+  if (event == "lock")
+    callback();
 }
 
 function bangle_setUI(map) {
@@ -96,6 +98,8 @@ Bangle.getAccel = function (v) { return emulate_accel(); }
 Bangle.on = bangle_on;
 Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return emulate_mag(); }
+Bangle.isLocked = function() { return false; }
+Bangle.getHealthStatus = function() { return { steps : 1234 } }
 Puck = {}
 Puck.light = function () { return readFloatFile(lightDev+"/in_illuminance_raw") / 4096; }
 WIDGETS = false;
