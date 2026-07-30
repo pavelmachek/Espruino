@@ -108,7 +108,7 @@ function BangleHttp(url) {
         if (0) {
           return reject(new Error("something bad"));
         }
-        resolve( { resp : rawData }); // Fixed: changed 'data' to 'rawData'
+        resolve( { resp : rawData });
       });
     }).on("error", (e) => {
       reject(e); // Added error handling for the request itself
@@ -143,7 +143,8 @@ const BTN1 = 1;
 if (use_sdl) {
   //initWindow(1024, 768);
   //initWindow(240, 240);
-  initWindow(360, 660);
+  //initWindow(360, 660);
+  initWindow(176, 176);
 } else {
   initInput();
   initDirect();
