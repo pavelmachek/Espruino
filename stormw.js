@@ -47,7 +47,7 @@ function htest() {
   let url = "https://api.open-meteo.com/v1/forecast?latitude=51.5085&longitude=-0.1257&current_weather=true";
   
   msg(".oO\nhttp");
-  getUrl(url, result => {
+  BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
     let temp = data.current_weather.temperature;
