@@ -52,15 +52,18 @@ function draw_weather(w) {
   msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
 }
 
+function temp_scale(y0, h, v) {
+  return y0 - ((v - 10) / 30) * h;
+}
+
 function draw_daily() {
   var data = {"time":["2026-07-30","2026-07-31","2026-08-01","2026-08-02"],"weather_code":[3,80,80,3],"temperature_2m_max":[37.4,35.9,30.2,27.3],"temperature_2m_min":[14.5,16.4,19.0,15.8],"precipitation_sum":[0.00,0.00,1.30,0.00]};
 
-  g.clearRect(0, 88, 176, 176);
-  g.setColor(0,0,0);
+  g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
 
   // Title
-  g.setColor(1,1,1);
+  g.setColor(0,0,0);
   g.setFont("6x15", 1);
   g.drawString("Daily Weather", 5, 92);
 
@@ -73,23 +76,22 @@ function draw_daily() {
   g.drawLine(x0, y0, x0 + w, y0);
   g.drawLine(x0, y0, x0, y0 - h);
 
-  // Plot lines (Max temp = Red, Min temp = Blue)
+  // Plot lines
   for (let i = 0; i < n - 1; i++) {
     let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
 
     // Scaling factor (Temp range roughly 10 to 40)
-    let tMaxY1 = y0 - ((data.temperature_2m_max[i] - 10) / 30) * h;
-    let tMaxY2 = y0 - ((data.temperature_2m_max[i+1] - 10) / 30) * h;
+    let tMaxY1 = temp_scale(y0, h, data.temperature_2m_max[i]);
+    let tMaxY2 = temp_scale(y0, h, data.temperature_2m_max[i+1]);
     g.setColor(1, 0, 0); // Red for Max Temp
     g.drawLine(px1, tMaxY1, px2, tMaxY2);
 
-    let tMinY1 = y0 - ((data.temperature_2m_min[i] - 10) / 30) * h;
-    let tMinY2 = y0 - ((data.temperature_2m_min[i+1] - 10) / 30) * h;
-    g.setColor(0, 0, 1); // Blue for Min Temp
+    let tMinY1 = temp_scale(y0, h, data.temperature_2m_min[i]);
+    let tMinY2 = temp_scale(y0, h, data.temperature_2m_min[i+1]);
+    g.setColor(1, 0, 0);
     g.drawLine(px1, tMinY1, px2, tMinY2);
   }
 }
-
 
 function draw_hourly() {
   var fullData = {"time":["2026-07-31T00:00","2026-07-31T01:00","2026-07-31T02:00","2026-07-31T03:00","2026-07-31T04:00","2026-07-31T05:00","2026-07-31T06:00","2026-07-31T07:00","2026-07-31T08:00","2026-07-31T09:00","2026-07-31T10:00","2026-07-31T11:00","2026-07-31T12:00","2026-07-31T13:00","2026-07-31T14:00","2026-07-31T15:00","2026-07-31T16:00","2026-07-31T17:00","2026-07-31T18:00","2026-07-31T19:00","2026-07-31T20:00","2026-07-31T21:00","2026-07-31T22:00","2026-07-31T23:00"],"temperature_2m":[24.4,21.8,20.0,17.9,16.4,18.0,21.5,25.1,28.5,31.2,32.9,32.8,33.9,34.3,35.8,35.9,35.7,34.8,32.0,27.8,27.7,26.5,24.3,21.8],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00]};
@@ -264,6 +266,6 @@ Bangle.on('GB', (s) => { msg(s); });
 //dl_daily();
 dl_hourly();
 msg("droid\ntest\nready");
-//draw_daily();
-draw_hourly();
+draw_daily();
+//draw_hourly();
 
