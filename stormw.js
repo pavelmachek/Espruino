@@ -60,16 +60,22 @@ function draw_current() {
   g.drawString(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n", 2, 88);
 }
 
-function temp_scale(y0, h, v) {
-  return y0 - ((v - 10) / 30) * h;
+function scale(y0, h, v) {
+  if (v < 0)
+    v = 0;
+  if (v > 1)
+    v = 1;
+  return y0 - v * h;
 }
+function scale_temp(y0, h, v) { return scale(y0, h, (v - 10) / 30); }
+function scale_wind(y0, h, v) { return scale(y0, h, v / 30); }
+function scale_rain(y0, h, v) { return scale(y0, h, v / 10); }
 
 function thickLine(a, b, c, d) {
   g.drawLine(a, b-1, c, d-1);
   g.drawLine(a, b, c, d);
   g.drawLine(a, b+1, c, d+1);
 }
-
 
 function draw_daily() {
   g.setColor(1,1,1);
@@ -100,13 +106,23 @@ function draw_daily() {
 
     // Scaling factor (Temp range roughly 10 to 40)
     g.setColor(1, 0, 0); // Red for Max Temp
-    let tMaxY1 = temp_scale(y0, h, data.temperature_2m_max[i]);
-    let tMaxY2 = temp_scale(y0, h, data.temperature_2m_max[i+1]);
+    let tMaxY1 = scale_temp(y0, h, data.temperature_2m_max[i]);
+    let tMaxY2 = scale_temp(y0, h, data.temperature_2m_max[i+1]);
     thickLine(px1, tMaxY1, px2, tMaxY2);
 
-    let tMinY1 = temp_scale(y0, h, data.temperature_2m_min[i]);
-    let tMinY2 = temp_scale(y0, h, data.temperature_2m_min[i+1]);
+    let tMinY1 = scale_temp(y0, h, data.temperature_2m_min[i]);
+    let tMinY2 = scale_temp(y0, h, data.temperature_2m_min[i+1]);
     thickLine(px1, tMinY1, px2, tMinY2);
+
+    g.setColor(0, 1, 0); // Green for wind
+    let Y1 = scale_wind(y0, h, data.wind_speed_10m_max[i]);
+    let Y2 = scale_wind(y0, h, data.wind_speed_10m_max[i+1]);
+    thickLine(px1, Y1, px2, Y2);
+
+    g.setColor(0, 0, 1); // Blue for rain
+    let Y1 = scale_rain(y0, h, data.precipitation_sum[i]);
+    let Y2 = scale_rain(y0, h, data.precipitation_sum[i+1]);
+    thickLine(px1, Y1, px2, Y2);
   }
 }
 
@@ -144,8 +160,8 @@ function draw_hourly() {
     let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
     
     // Scaling factor (Temp range roughly 15 to 30 for these hours)
-    let tY1 = temp_scale(y0, h, temps[i]);
-    let tY2 = temp_scale(y0, h, temps[i+1]);
+    let tY1 = scale_temp(y0, h, temps[i]);
+    let tY2 = scale_temp(y0, h, temps[i+1]);
 
     g.setColor(1, 0, 0);
     thickLine(px1, tY1, px2, tY2);
@@ -164,7 +180,7 @@ function get_url(mode) {
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
   let hourly = "&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
   let today = "&forecast_days=1";
-  let past_future = "&past_days=1&forecast_days=3";
+  let past_future = "&past_days=1&forecast_days=16";
   if (mode == "daily")
     return url+daily+past_future;
   if (mode == "hourly")
