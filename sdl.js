@@ -85,7 +85,7 @@ function onTouch(drag) {
   }
   let d = bangle_on_map['touch'];
   if (d) {
-    d(0, drag);
+    d(drag.b, drag);
   }
 }
 

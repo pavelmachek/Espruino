@@ -342,7 +342,7 @@ function cycle() {
 
 let prev_button = 0;
 
-Bangle.on('touch', function(button, xy) {
+Bangle.on('drag', function(xy) {
   print(prev_button, xy.b);
   if (!xy.b || prev_button) {
     prev_button = xy.b;
@@ -372,7 +372,8 @@ Bangle.on('touch', function(button, xy) {
 let interval;
 function setupRefreshInterval() {
   if (interval) clearInterval(interval);
-  let rate = Bangle.isLocked() ? 60000 : 1000;
+  // Display update is way too slow
+  let rate = Bangle.isLocked() ? 60000 : 60000;
   interval = setInterval(draw, rate);
   draw();
 }
