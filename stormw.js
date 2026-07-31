@@ -48,6 +48,7 @@ function BgetUrl(url, cb) {
 let w_current = null;
 let w_hourly = null;
 let w_daily = null;
+let mode = "hourly";
 
 function draw_current() {
   w = w_current;
@@ -104,14 +105,19 @@ function draw_daily() {
 }
 
 function draw_hourly() {
-  var fullData = {"time":["2026-07-31T00:00","2026-07-31T01:00","2026-07-31T02:00","2026-07-31T03:00","2026-07-31T04:00","2026-07-31T05:00","2026-07-31T06:00","2026-07-31T07:00","2026-07-31T08:00","2026-07-31T09:00","2026-07-31T10:00","2026-07-31T11:00","2026-07-31T12:00","2026-07-31T13:00","2026-07-31T14:00","2026-07-31T15:00","2026-07-31T16:00","2026-07-31T17:00","2026-07-31T18:00","2026-07-31T19:00","2026-07-31T20:00","2026-07-31T21:00","2026-07-31T22:00","2026-07-31T23:00"],"temperature_2m":[24.4,21.8,20.0,17.9,16.4,18.0,21.5,25.1,28.5,31.2,32.9,32.8,33.9,34.3,35.8,35.9,35.7,34.8,32.0,27.8,27.7,26.5,24.3,21.8],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00]};
-
-  // Slice next 6 hours
-  var times = fullData.time.slice(0, 6);
-  var temps = fullData.temperature_2m.slice(0, 6);
-
   g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
+
+  let data = w_hourly;
+  if (!data)
+    return;
+  print(data);
+
+  // Slice next 6 hours
+  let times = data.time.slice(0, 6);
+  let temps = data.temperature_2m.slice(0, 6);
+  // FIXME: this will start at midnight
+  print(times, temps);
 
   // Title
   g.setColor(0,0,0);
@@ -187,7 +193,27 @@ function dl_hourly() {
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
+    print(data);
+    w_hourly = data.hourly;
   });
+}
+
+function download() {
+  if (mode == "cur")
+    return dl_current();
+  if (mode == "daily")
+    return dl_daily();
+  if (mode == "hourly")
+    return dl_hourly();
+}
+
+function draw_any() {
+  if (mode == "cur")
+    return draw_current();
+  if (mode == "daily")
+    return draw_daily();
+  if (mode == "hourly")
+    return draw_hourly();
 }
 
 function draw() {
@@ -224,7 +250,7 @@ function draw() {
   }
 
   //draw_current(w_current);
-  draw_daily();
+  draw_any();
   return;
 
   // 4. Draw Status Area (Uncertainty & GPS status)
@@ -274,9 +300,7 @@ function setupRefreshInterval() {
 }
 
 Bangle.on('GB', (s) => { msg(s); });
-//dl_current();
-dl_daily();
-//dl_hourly();
+download();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
 //draw_current();
