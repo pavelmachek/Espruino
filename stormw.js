@@ -45,9 +45,12 @@ function BgetUrl(url, cb) {
   });
 }
 
-let cur_weather = {};
+let w_current = null;
+let w_hourly = null;
+let w_daily = null;
 
-function draw_current(w) {
+function draw_current() {
+  w = w_current;
   g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
   
@@ -61,10 +64,13 @@ function temp_scale(y0, h, v) {
 }
 
 function draw_daily() {
-  var data = {"time":["2026-07-30","2026-07-31","2026-08-01","2026-08-02"],"weather_code":[3,80,80,3],"temperature_2m_max":[37.4,35.9,30.2,27.3],"temperature_2m_min":[14.5,16.4,19.0,15.8],"precipitation_sum":[0.00,0.00,1.30,0.00]};
-
   g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
+
+  let data = w_daily;
+  if (!data)
+    return;
+  print(data);
 
   // Title
   g.setColor(0,0,0);
@@ -153,17 +159,14 @@ function get_url(mode) {
     return url+hourly+today;
 }
 
-// future daily/hourly 
-// including past      https://api.open-meteo.com/v1/forecast?latitude=50&longitude=14&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m&past_days=1&forecast_days=1
-
 function dl_current() {
   let url = get_url("cur");
   msg(".oO\ncur");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
-    cur_weather = data.current_weather;
-    draw_current(cur_weather);
+    w_current = data.current_weather;
+    draw_current();
   });
 }
 
@@ -173,6 +176,8 @@ function dl_daily() {
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
+    print(data);
+    w_daily = data.daily;
   });
 }
 
@@ -218,7 +223,8 @@ function draw() {
     g.drawString(timeStr, xstart, 30, fontSize);
   }
 
-  draw_current(cur_weather);
+  //draw_current(w_current);
+  draw_daily();
   return;
 
   // 4. Draw Status Area (Uncertainty & GPS status)
@@ -254,7 +260,7 @@ Bangle.on('touch', function(button, xy) {
     if (xy.x > xLimit) {
       dl_current();
     } else {
-      draw_current(cur_weather);
+      draw_current();
     }
   }
 });
@@ -268,12 +274,12 @@ function setupRefreshInterval() {
 }
 
 Bangle.on('GB', (s) => { msg(s); });
-dl_current();
-//dl_daily();
+//dl_current();
+dl_daily();
 //dl_hourly();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
-draw_current(cur_weather);
+//draw_current();
 //draw_daily();
 //draw_hourly();
 
