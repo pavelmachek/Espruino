@@ -9,7 +9,7 @@ print("uploading droid test");
 
 function msg(s) {
   print(s);
-  g.clear();
+  g.reset().clear();
   g.setFont("Vector", 48);
   g.drawString(s, 10, 10);
   g.flip();
@@ -50,14 +50,20 @@ let w_hourly = null;
 let w_daily = null;
 let mode = "hourly";
 
-function draw_current() {
-  w = w_current;
-  g.setColor(1,1,1);
+function draw_msg(s) {
+  g.reset().setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
   
   g.setColor(0,0,0);
   g.setFont("Vector", 29);
-  g.drawString(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n", 2, 88);
+  g.drawString(s, 2, 88);
+}
+
+function draw_current() {
+  w = w_current;
+  if (!w)
+    return;  
+  draw_msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
 }
 
 function scale(y0, h, v) {
@@ -322,18 +328,45 @@ function draw() {
   return;
 }
 
+function cycle() {
+  if (mode == "cur") {
+    mode = "hourly";
+  } else if (mode == "hourly") {
+    mode = "daily";
+  } else
+  if (mode == "daily") {
+    mode = "cur";
+  }
+  draw_msg(mode);    
+}
+
+let prev_button = 0;
+
 Bangle.on('touch', function(button, xy) {
+  print(prev_button, xy.b);
+  if (!xy.b || prev_button) {
+    prev_button = xy.b;
+    return;
+  }
+  prev_button = xy.b;
+
   let xLimit = g.getHeight() / 2; // Bottom active zone                       
   let yLimit = g.getHeight() / 2; // Bottom active zone                       
   msg("button");
   
-  if (xy.y > yLimit) {
-    if (xy.x > xLimit) {
-      dl_current();
+  if (xy.y <= yLimit) {
+    if (xy.x <= xLimit) {
+      download();
     } else {
-      draw_current();
+      cycle();
     }
-  }
+  } else {
+    if (xy.x <= xLimit) {
+      draw_current();
+    } else {
+      dl_current();
+    }
+  }    
 });
 
 let interval;
@@ -345,7 +378,7 @@ function setupRefreshInterval() {
 }
 
 Bangle.on('GB', (s) => { msg(s); });
-download();
+//download();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
 //draw_current();
