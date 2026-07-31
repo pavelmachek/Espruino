@@ -52,11 +52,93 @@ function draw_weather(w) {
   msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
 }
 
+function drawDailyWeather() {
+  var data = {"time":["2026-07-30","2026-07-31","2026-08-01","2026-08-02"],"weather_code":[3,80,80,3],"temperature_2m_max":[37.4,35.9,30.2,27.3],"temperature_2m_min":[14.5,16.4,19.0,15.8],"precipitation_sum":[0.00,0.00,1.30,0.00]};
+
+  g.clearRect(0, 88, 176, 176);
+  g.setColor(0,0,0);
+  g.fillRect(0, 88, 176, 176);
+
+  // Title
+  g.setColor(1,1,1);
+  g.setFont("6x15", 1);
+  g.drawString("Daily Weather", 5, 92);
+
+  var x0 = 20, y0 = 165, w = 140, h = 50;
+  var n = data.time.length;
+  var dx = w / (n - 1);
+
+  // Draw axes
+  g.setColor(0.5, 0.5, 0.5);
+  g.drawLine(x0, y0, x0 + w, y0);
+  g.drawLine(x0, y0, x0, y0 - h);
+
+  // Plot lines (Max temp = Red, Min temp = Blue)
+  for (let i = 0; i < n - 1; i++) {
+    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
+
+    // Scaling factor (Temp range roughly 10 to 40)
+    let tMaxY1 = y0 - ((data.temperature_2m_max[i] - 10) / 30) * h;
+    let tMaxY2 = y0 - ((data.temperature_2m_max[i+1] - 10) / 30) * h;
+    g.setColor(1, 0, 0); // Red for Max Temp
+    g.drawLine(px1, tMaxY1, px2, tMaxY2);
+
+    let tMinY1 = y0 - ((data.temperature_2m_min[i] - 10) / 30) * h;
+    let tMinY2 = y0 - ((data.temperature_2m_min[i+1] - 10) / 30) * h;
+    g.setColor(0, 0, 1); // Blue for Min Temp
+    g.drawLine(px1, tMinY1, px2, tMinY2);
+  }
+}
+
+
+function drawHourlyWeather() {
+  var fullData = {"time":["2026-07-31T00:00","2026-07-31T01:00","2026-07-31T02:00","2026-07-31T03:00","2026-07-31T04:00","2026-07-31T05:00","2026-07-31T06:00","2026-07-31T07:00","2026-07-31T08:00","2026-07-31T09:00","2026-07-31T10:00","2026-07-31T11:00","2026-07-31T12:00","2026-07-31T13:00","2026-07-31T14:00","2026-07-31T15:00","2026-07-31T16:00","2026-07-31T17:00","2026-07-31T18:00","2026-07-31T19:00","2026-07-31T20:00","2026-07-31T21:00","2026-07-31T22:00","2026-07-31T23:00"],"temperature_2m":[24.4,21.8,20.0,17.9,16.4,18.0,21.5,25.1,28.5,31.2,32.9,32.8,33.9,34.3,35.8,35.9,35.7,34.8,32.0,27.8,27.7,26.5,24.3,21.8],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00]};
+
+  // Slice next 6 hours
+  var times = fullData.time.slice(0, 6);
+  var temps = fullData.temperature_2m.slice(0, 6);
+
+  g.clearRect(0, 88, 176, 176);
+  g.setColor(0,0,0);
+  g.fillRect(0, 88, 176, 176);
+
+  // Title
+  g.setColor(1,1,1);
+  g.setFont("6x15", 1);
+  g.drawString("Next 6h Temp", 5, 92);
+
+  var x0 = 20, y0 = 165, w = 140, h = 50;
+  var n = times.length;
+  var dx = w / (n - 1);
+
+  // Draw axes
+  g.setColor(0.5, 0.5, 0.5);
+  g.drawLine(x0, y0, x0 + w, y0);
+  g.drawLine(x0, y0, x0, y0 - h);
+
+  // Plot temperature line (Yellow/Green)
+  for (let i = 0; i < n - 1; i++) {
+    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
+    
+    // Scaling factor (Temp range roughly 15 to 30 for these hours)
+    let tY1 = y0 - ((temps[i] - 15) / 20) * h;
+    let tY2 = y0 - ((temps[i+1] - 15) / 20) * h;
+
+    g.setColor(1, 1, 0); // Yellow for hourly temperature
+    g.drawLine(px1, tY1, px2, tY2);
+    
+    // Draw small time indicators at the bottom
+    g.setColor(0.7, 0.7, 0.7);
+    let hourStr = times[i].split("T")[1];
+    g.drawString(hourStr, px1 - 6, y0 + 3);
+  }
+}
+
 function get_url(mode) {
   let url = "https://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
   if (mode == "cur")
     return url+"&current_weather=true";
-  let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
+  let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
   let hourly = "&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
   let today = "&forecast_days=1";
   let past_future = "&past_days=1&forecast_days=3";
@@ -177,11 +259,14 @@ function setupRefreshInterval() {
   draw();
 }
 
-Bangle.on('lock', setupRefreshInterval);
+//Bangle.on('lock', setupRefreshInterval);
 Bangle.on('GB', (s) => { msg(s); });
+//dl_current();
 //dl_daily();
 dl_hourly();
 msg("droid\ntest\nready");
+//drawDailyWeather();
+drawHourlyWeather();
 
 // weather.js
 
