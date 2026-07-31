@@ -48,7 +48,7 @@ function BgetUrl(url, cb) {
 let w_current = null;
 let w_hourly = null;
 let w_daily = null;
-let mode = "daily";
+let mode = "hourly";
 
 function draw_current() {
   w = w_current;
@@ -91,9 +91,9 @@ function draw_daily() {
   g.setFont("6x15", 1);
   g.drawString("Daily Weather", 5, 92);
 
-  var x0 = 20, y0 = 165, w = 140, h = 50;
-  var n = data.time.length;
-  var dx = w / (n - 1);
+  let x0 = 20, y0 = 165, w = 140, h = 50;
+  let n = data.time.length;
+  let dx = w / (n - 1);
 
   // Draw axes
   g.setColor(0.5, 0.5, 0.5);
@@ -136,19 +136,26 @@ function draw_hourly() {
   print(data);
 
   // Slice next 6 hours
-  let times = data.time.slice(0, 6);
-  let temps = data.temperature_2m.slice(0, 6);
+  let times = data.time.slice(0, 48);
+  let temps = data.temperature_2m.slice(0, 48);
   // FIXME: this will start at midnight
-  print(times, temps);
+  // print(times, temps);
+
+  let d = new Date();
+
+  // Get the current hour in UTC (0-23)
+  let utcHour = d.getHours() - (d.getTimezoneOffset() / 60);
+
+  print("utc:", utcHour);
 
   // Title
   g.setColor(0,0,0);
   g.setFont("6x15", 1);
-  g.drawString("Next 6h Temp", 5, 92);
+  g.drawString("Hourly", 5, 92);
 
-  var x0 = 20, y0 = 165, w = 140, h = 50;
-  var n = times.length;
-  var dx = w / (n - 1);
+  let x0 = 20, y0 = 165, w = 140, h = 50;
+  let n = times.length;
+  let dx = w / (n - 1);
 
   // Draw axes
   g.setColor(0.5, 0.5, 0.5);
@@ -158,6 +165,12 @@ function draw_hourly() {
   // Plot temperature line (Yellow/Green)
   for (let i = 0; i < n - 1; i++) {
     let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
+
+    if (i == utcHour) {
+      g.setColor(0, 0, 0);
+      thickLine(0, y0-h, px1, y0-h);
+      thickLine(px1, y0-h, px1, y0);
+    }      
     
     // Scaling factor (Temp range roughly 15 to 30 for these hours)
     let tY1 = scale_temp(y0, h, temps[i]);
@@ -165,6 +178,16 @@ function draw_hourly() {
 
     g.setColor(1, 0, 0);
     thickLine(px1, tY1, px2, tY2);
+
+    g.setColor(0, 1, 0); // Green for wind
+    let Y1 = scale_wind(y0, h, data.wind_speed_10m[i]);
+    let Y2 = scale_wind(y0, h, data.wind_speed_10m[i+1]);
+    thickLine(px1, Y1, px2, Y2);
+
+    g.setColor(0, 0, 1); // Blue for rain
+    Y1 = scale_rain(y0, h, data.precipitation[i]);
+    Y2 = scale_rain(y0, h, data.precipitation[i+1]);
+    thickLine(px1, Y1, px2, Y2);
     
     // Draw small time indicators at the bottom
     g.setColor(0.7, 0.7, 0.7);
@@ -179,7 +202,7 @@ function get_url(mode) {
     return url+"&current_weather=true";
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
   let hourly = "&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
-  let today = "&forecast_days=1";
+  let today = "&forecast_days=2";
   let past_future = "&past_days=1&forecast_days=16";
   if (mode == "daily")
     return url+daily+past_future;
