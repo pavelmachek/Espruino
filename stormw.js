@@ -52,7 +52,7 @@ function draw_weather(w) {
   msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
 }
 
-function drawDailyWeather() {
+function draw_daily() {
   var data = {"time":["2026-07-30","2026-07-31","2026-08-01","2026-08-02"],"weather_code":[3,80,80,3],"temperature_2m_max":[37.4,35.9,30.2,27.3],"temperature_2m_min":[14.5,16.4,19.0,15.8],"precipitation_sum":[0.00,0.00,1.30,0.00]};
 
   g.clearRect(0, 88, 176, 176);
@@ -91,19 +91,18 @@ function drawDailyWeather() {
 }
 
 
-function drawHourlyWeather() {
+function draw_hourly() {
   var fullData = {"time":["2026-07-31T00:00","2026-07-31T01:00","2026-07-31T02:00","2026-07-31T03:00","2026-07-31T04:00","2026-07-31T05:00","2026-07-31T06:00","2026-07-31T07:00","2026-07-31T08:00","2026-07-31T09:00","2026-07-31T10:00","2026-07-31T11:00","2026-07-31T12:00","2026-07-31T13:00","2026-07-31T14:00","2026-07-31T15:00","2026-07-31T16:00","2026-07-31T17:00","2026-07-31T18:00","2026-07-31T19:00","2026-07-31T20:00","2026-07-31T21:00","2026-07-31T22:00","2026-07-31T23:00"],"temperature_2m":[24.4,21.8,20.0,17.9,16.4,18.0,21.5,25.1,28.5,31.2,32.9,32.8,33.9,34.3,35.8,35.9,35.7,34.8,32.0,27.8,27.7,26.5,24.3,21.8],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00]};
 
   // Slice next 6 hours
   var times = fullData.time.slice(0, 6);
   var temps = fullData.temperature_2m.slice(0, 6);
 
-  g.clearRect(0, 88, 176, 176);
-  g.setColor(0,0,0);
+  g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
 
   // Title
-  g.setColor(1,1,1);
+  g.setColor(0,0,0);
   g.setFont("6x15", 1);
   g.drawString("Next 6h Temp", 5, 92);
 
@@ -124,7 +123,7 @@ function drawHourlyWeather() {
     let tY1 = y0 - ((temps[i] - 15) / 20) * h;
     let tY2 = y0 - ((temps[i+1] - 15) / 20) * h;
 
-    g.setColor(1, 1, 0); // Yellow for hourly temperature
+    g.setColor(1, 0, 0);
     g.drawLine(px1, tY1, px2, tY2);
     
     // Draw small time indicators at the bottom
@@ -265,31 +264,6 @@ Bangle.on('GB', (s) => { msg(s); });
 //dl_daily();
 dl_hourly();
 msg("droid\ntest\nready");
-//drawDailyWeather();
-drawHourlyWeather();
+//draw_daily();
+draw_hourly();
 
-// weather.js
-
-// Example coordinates for London, UK (Latitude: 51.5074, Longitude: -0.1278)
-const LATITUDE = 51.5074;
-const LONGITUDE = -0.1278;
-
-const city = "London";
-
-function printWeather(rawData) {
-  const data = JSON.parse(rawData);
-  const current = data.current_weather;
-
-  console.log("\n--- Current Weather ---");
-  console.log(`City          : ${city}`);
-  console.log(`Temperature   : ${current.temperature} °C`);
-  console.log(`Wind Speed    : ${current.windspeed} km/h`);
-  console.log(`Wind Direction: ${current.winddirection}°`);
-  console.log(`Time          : ${current.time}`);
-}
-
-function getWeather() {
-  getUrl(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&current_weather=true`, printWeather);
-}
-
-//getWeather();
