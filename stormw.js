@@ -120,8 +120,8 @@ function draw_daily() {
     thickLine(px1, Y1, px2, Y2);
 
     g.setColor(0, 0, 1); // Blue for rain
-    let Y1 = scale_rain(y0, h, data.precipitation_sum[i]);
-    let Y2 = scale_rain(y0, h, data.precipitation_sum[i+1]);
+    Y1 = scale_rain(y0, h, data.precipitation_sum[i]);
+    Y2 = scale_rain(y0, h, data.precipitation_sum[i+1]);
     thickLine(px1, Y1, px2, Y2);
   }
 }
