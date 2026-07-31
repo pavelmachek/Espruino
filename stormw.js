@@ -48,7 +48,7 @@ function BgetUrl(url, cb) {
 let w_current = null;
 let w_hourly = null;
 let w_daily = null;
-let mode = "hourly";
+let mode = "daily";
 
 function draw_current() {
   w = w_current;
@@ -63,6 +63,13 @@ function draw_current() {
 function temp_scale(y0, h, v) {
   return y0 - ((v - 10) / 30) * h;
 }
+
+function thickLine(a, b, c, d) {
+  g.drawLine(a, b-1, c, d-1);
+  g.drawLine(a, b, c, d);
+  g.drawLine(a, b+1, c, d+1);
+}
+
 
 function draw_daily() {
   g.setColor(1,1,1);
@@ -92,15 +99,14 @@ function draw_daily() {
     let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
 
     // Scaling factor (Temp range roughly 10 to 40)
+    g.setColor(1, 0, 0); // Red for Max Temp
     let tMaxY1 = temp_scale(y0, h, data.temperature_2m_max[i]);
     let tMaxY2 = temp_scale(y0, h, data.temperature_2m_max[i+1]);
-    g.setColor(1, 0, 0); // Red for Max Temp
-    g.drawLine(px1, tMaxY1, px2, tMaxY2);
+    thickLine(px1, tMaxY1, px2, tMaxY2);
 
     let tMinY1 = temp_scale(y0, h, data.temperature_2m_min[i]);
     let tMinY2 = temp_scale(y0, h, data.temperature_2m_min[i+1]);
-    g.setColor(1, 0, 0);
-    g.drawLine(px1, tMinY1, px2, tMinY2);
+    thickLine(px1, tMinY1, px2, tMinY2);
   }
 }
 
@@ -138,11 +144,11 @@ function draw_hourly() {
     let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
     
     // Scaling factor (Temp range roughly 15 to 30 for these hours)
-    let tY1 = y0 - ((temps[i] - 15) / 20) * h;
-    let tY2 = y0 - ((temps[i+1] - 15) / 20) * h;
+    let tY1 = temp_scale(y0, h, temps[i]);
+    let tY2 = temp_scale(y0, h, temps[i+1]);
 
     g.setColor(1, 0, 0);
-    g.drawLine(px1, tY1, px2, tY2);
+    thickLine(px1, tY1, px2, tY2);
     
     // Draw small time indicators at the bottom
     g.setColor(0.7, 0.7, 0.7);
