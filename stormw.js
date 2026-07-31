@@ -15,7 +15,6 @@ function msg(s) {
   g.flip();
 }
 
-
 msg("uploading\ndroid");
 
 function getUrl(url, cb) {
@@ -48,8 +47,13 @@ function BgetUrl(url, cb) {
 
 let cur_weather = {};
 
-function draw_weather(w) {
-  msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
+function draw_current(w) {
+  g.setColor(1,1,1);
+  g.fillRect(0, 88, 176, 176);
+  
+  g.setColor(0,0,0);
+  g.setFont("Vector", 29);
+  g.drawString(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n", 2, 88);
 }
 
 function temp_scale(y0, h, v) {
@@ -159,7 +163,7 @@ function dl_current() {
     print("Go result", result);
     let data = JSON.parse(result);
     cur_weather = data.current_weather;
-    draw_weather(cur_weather);
+    draw_current(cur_weather);
   });
 }
 
@@ -211,8 +215,11 @@ function draw() {
   
     g.setColor(0, 0, 0); // Black text
     g.setFontAlign(-1, -1);
-    g.drawString(timeStr, xstart, 25+fontSize / 2, fontSize);
+    g.drawString(timeStr, xstart, 30, fontSize);
   }
+
+  draw_current(cur_weather);
+  return;
 
   // 4. Draw Status Area (Uncertainty & GPS status)
   fontSize = 28;
@@ -247,7 +254,7 @@ Bangle.on('touch', function(button, xy) {
     if (xy.x > xLimit) {
       dl_current();
     } else {
-      draw_weather(cur_weather);
+      draw_current(cur_weather);
     }
   }
 });
@@ -260,12 +267,13 @@ function setupRefreshInterval() {
   draw();
 }
 
-//Bangle.on('lock', setupRefreshInterval);
 Bangle.on('GB', (s) => { msg(s); });
-//dl_current();
+dl_current();
 //dl_daily();
-dl_hourly();
+//dl_hourly();
 msg("droid\ntest\nready");
-draw_daily();
+Bangle.on('lock', setupRefreshInterval);
+draw_current(cur_weather);
+//draw_daily();
 //draw_hourly();
 
