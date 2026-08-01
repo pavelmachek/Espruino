@@ -3,6 +3,9 @@ eval(require("fs").readFile("sdl.js"));
 
 // Storm watch
 
+// TODO: logarithmic precipation
+// show precipation probability?
+// something to do with cape?
 let pos = { lat : 50, lon : 14.45 };
 
 print("uploading droid test");
@@ -486,7 +489,8 @@ function setupRefreshInterval() {
   draw();
 }
 
-Bangle.on('GB', (s) => { msg(s); });
+// This causes [object] on screen
+//Bangle.on('GB', (s) => { msg(s); });
 download();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
