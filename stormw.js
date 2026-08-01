@@ -122,59 +122,23 @@ function get_url(mode) {
     return url+short+minutely;
 }
 
-function dl_current() {
-  let url = get_url("cur");
-  draw_msg(".oO\ncur");
-  BgetUrl(url, result => {
-    print("Go result", result);
-    let data = JSON.parse(result);
-    w_current = data.current_weather;
-    draw_current();
-  });
-}
-
-function dl_daily() {
-  let url = get_url("daily");
-  draw_msg(".oO\ndaily");
-  BgetUrl(url, result => {
-    print("Go result", result);
-    let data = JSON.parse(result);
-    print(data);
-    w_daily = data.daily;
-  });
-}
-
-function dl_hourly() {
-  let url = get_url("hourly");
-  draw_msg(".oO\nhourly");
-  BgetUrl(url, result => {
-    print("Go result", result);
-    let data = JSON.parse(result);
-    print(data);
-    w_hourly = data.hourly;
-  });
-}
-
-function dl_minutely() {
-  let url = get_url("minutely");
-  draw_msg(".oO\nminutely");
-  BgetUrl(url, result => {
-    print("Go result", result);
-    let data = JSON.parse(result);
-    print(data);
-    w_minutely = data.minutely_15;
-  });
-}
-
 function download() {
-  if (mode == "cur")
-    return dl_current();
-  if (mode == "daily")
-    return dl_daily();
-  if (mode == "hourly")
-    return dl_hourly();
-  if (mode == "minutely")
-    return dl_minutely();
+  let url = get_url(mode);
+  draw_msg(".oO\n"+mode);
+  BgetUrl(url, result => {
+    print("Got result", result);
+    let data = JSON.parse(result);
+    if (mode == "cur")
+      w_current = data.current_weather;
+    if (mode == "daily")
+      w_daily = data.daily;
+    if (mode == "hourly")
+      w_hourly = data.hourly;
+    if (mode == "minutely")
+      w_minutely = data.minutely_15;
+    draw_any();
+  });
+  
 }
 
 function draw_any() {
