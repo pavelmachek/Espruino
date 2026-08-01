@@ -3,7 +3,9 @@ eval(require("fs").readFile("sdl.js"));
 
 // Storm watch
 
-let pos = { lat : 50, lon : 14 };
+let pos = { lat : 50, lon : 14.45 };
+
+
 
 print("uploading droid test");
 
@@ -48,7 +50,8 @@ function BgetUrl(url, cb) {
 let w_current = null;
 let w_hourly = null;
 let w_daily = null;
-let mode = "hourly";
+let w_minutely = null;
+let mode = "minutely";
 
 function draw_msg(s) {
   g.reset().setColor(1,1,1);
@@ -202,18 +205,96 @@ function draw_hourly() {
   }
 }
 
+function draw_minutely() {
+  g.setColor(1,1,1);
+  g.fillRect(0, 88, 176, 176);
+
+  let data = w_minutely;
+  if (!data)
+    return;
+  print(data);
+
+  // Slice next 6 hours
+  let times = data.time.slice(0, 48);
+  let temps = data.temperature_2m.slice(0, 48);
+  // FIXME: this will start at midnight
+  // print(times, temps);
+
+  let d = new Date();
+
+  // Get the current hour in UTC (0-23)
+  let utcHour = 4;
+  print("utc:", utcHour);
+
+  // Title
+  g.setColor(0,0,0);
+  g.setFont("6x15", 1);
+  g.drawString("Minutely", 5, 92);
+
+  let x0 = 20, y0 = 165, w = 140, h = 50;
+  let n = times.length;
+  let dx = w / (n - 1);
+
+  // Draw axes
+  g.setColor(0.5, 0.5, 0.5);
+  g.drawLine(x0, y0, x0 + w, y0);
+  g.drawLine(x0, y0, x0, y0 - h);
+
+  // Plot temperature line (Yellow/Green)
+  for (let i = 0; i < n - 1; i++) {
+    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
+
+    if (i == utcHour) {
+      g.setColor(0, 0, 0);
+      thickLine(0, y0-h, px1, y0-h);
+      thickLine(px1, y0-h, px1, y0);
+    }      
+    
+    // Scaling factor (Temp range roughly 15 to 30 for these hours)
+    let tY1 = scale_temp(y0, h, temps[i]);
+    let tY2 = scale_temp(y0, h, temps[i+1]);
+
+    g.setColor(1, 0, 0);
+    thickLine(px1, tY1, px2, tY2);
+
+    g.setColor(0, 1, 0); // Green for wind
+    let Y1 = scale_wind(y0, h, data.wind_speed_10m[i]);
+    let Y2 = scale_wind(y0, h, data.wind_speed_10m[i+1]);
+    thickLine(px1, Y1, px2, Y2);
+
+    g.setColor(0, 0, 1); // Blue for rain
+    Y1 = scale_rain(y0, h, data.precipitation[i]);
+    Y2 = scale_rain(y0, h, data.precipitation[i+1]);
+    thickLine(px1, Y1, px2, Y2);
+    
+    // Draw small time indicators at the bottom
+    g.setColor(0.7, 0.7, 0.7);
+    let hourStr = times[i].split("T")[1];
+    g.drawString(hourStr, px1 - 6, y0 + 3);
+  }
+}
+
 function get_url(mode) {
   let url = "https://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
   if (mode == "cur")
     return url+"&current_weather=true";
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
-  let hourly = "&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
+  let detail = "temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
+  let hourly = "&hourly="+detail
+  let minutely = "&minutely_15="+detail
+
+  // forecast\?latitude\=40\&longitude\=14.45\&daily\=sunrise\,sunset\,moonrise\,moonset\,moon_phase\,precipitation_sum\,precipitation_hours\,precipitation_probability_max\&hourly\=precipitation_probability\,cloud_cover\&models\=best_match\&current\=is_day\&m
+
+
   let today = "&forecast_days=2";
   let past_future = "&past_days=1&forecast_days=16";
+  let short = "&forecast_minutely_15\=24\&past_minutely_15\=4";
   if (mode == "daily")
     return url+daily+past_future;
   if (mode == "hourly")
     return url+hourly+today;
+  if (mode == "minutely")
+    return url+short+minutely;
 }
 
 function dl_current() {
@@ -240,12 +321,23 @@ function dl_daily() {
 
 function dl_hourly() {
   let url = get_url("hourly");
-  msg(".oO\ndaily");
+  msg(".oO\nhourly");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
     print(data);
     w_hourly = data.hourly;
+  });
+}
+
+function dl_minutely() {
+  let url = get_url("minutely");
+  msg(".oO\nminutely");
+  BgetUrl(url, result => {
+    print("Go result", result);
+    let data = JSON.parse(result);
+    print(data);
+    w_minutely = data.minutely_15;
   });
 }
 
@@ -256,6 +348,8 @@ function download() {
     return dl_daily();
   if (mode == "hourly")
     return dl_hourly();
+  if (mode == "minutely")
+    return dl_minutely();
 }
 
 function draw_any() {
@@ -265,6 +359,8 @@ function draw_any() {
     return draw_daily();
   if (mode == "hourly")
     return draw_hourly();
+  if (mode == "minutely")
+    return draw_minutely();
 }
 
 function draw() {
@@ -333,8 +429,9 @@ function cycle() {
     mode = "hourly";
   } else if (mode == "hourly") {
     mode = "daily";
-  } else
-  if (mode == "daily") {
+  } else if (mode == "daily") {
+    mode = "minutely";
+  } else if (mode == "minutely") {
     mode = "cur";
   }
   draw_msg(mode);    
@@ -373,16 +470,14 @@ let interval;
 function setupRefreshInterval() {
   if (interval) clearInterval(interval);
   // Display update is way too slow
-  let rate = Bangle.isLocked() ? 60000 : 60000;
+  let rate = Bangle.isLocked() ? 60000 : 5000;
   interval = setInterval(draw, rate);
   draw();
 }
 
 Bangle.on('GB', (s) => { msg(s); });
-//download();
+download();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
-//draw_current();
-//draw_daily();
-//draw_hourly();
+draw_any();
 
