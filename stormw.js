@@ -5,8 +5,6 @@ eval(require("fs").readFile("sdl.js"));
 
 let pos = { lat : 50, lon : 14.45 };
 
-
-
 print("uploading droid test");
 
 function msg(s) {
@@ -78,7 +76,8 @@ function scale(y0, h, v) {
 }
 function scale_temp(y0, h, v) { return scale(y0, h, (v - 10) / 30); }
 function scale_wind(y0, h, v) { return scale(y0, h, v / 30); }
-function scale_rain(y0, h, v) { return scale(y0, h, v / 10); }
+function scale_rain(y0, h, v) { return scale(y0, h, v); }
+function scale_cloud(y0, h, v) { return scale(y0, h, 1 - (v / 100)); }
 
 function thickLine(a, b, c, d) {
   g.drawLine(a, b-1, c, d-1);
@@ -197,6 +196,11 @@ function draw_hourly() {
     Y1 = scale_rain(y0, h, data.precipitation[i]);
     Y2 = scale_rain(y0, h, data.precipitation[i+1]);
     thickLine(px1, Y1, px2, Y2);
+
+    g.setColor(1, 1, 0); // Yellow four cloud cover
+    Y1 = scale_cloud(y0, h, data.cloud_cover[i]);
+    Y2 = scale_cloud(y0, h, data.cloud_cover[i+1]);
+    thickLine(px1, Y1, px2, Y2);
     
     // Draw small time indicators at the bottom
     g.setColor(0.7, 0.7, 0.7);
@@ -266,6 +270,11 @@ function draw_minutely() {
     Y1 = scale_rain(y0, h, data.precipitation[i]);
     Y2 = scale_rain(y0, h, data.precipitation[i+1]);
     thickLine(px1, Y1, px2, Y2);
+
+    g.setColor(1, 1, 0); // Yellow four cloud cover
+    Y1 = scale_cloud(y0, h, data.cloud_cover[i]);
+    Y2 = scale_cloud(y0, h, data.cloud_cover[i+1]);
+    thickLine(px1, Y1, px2, Y2);
     
     // Draw small time indicators at the bottom
     g.setColor(0.7, 0.7, 0.7);
@@ -279,12 +288,14 @@ function get_url(mode) {
   if (mode == "cur")
     return url+"&current_weather=true";
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
-  let detail = "temperature_2m,precipitation,weather_code,wind_speed_10m&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m";
+  let detail = "temperature_2m,precipitation,weather_code,wind_speed_10m,weather_code,cloud_cover,cape,is_day,sunshine_duration";
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
 
   // forecast\?latitude\=40\&longitude\=14.45\&daily\=sunrise\,sunset\,moonrise\,moonset\,moon_phase\,precipitation_sum\,precipitation_hours\,precipitation_probability_max\&hourly\=precipitation_probability\,cloud_cover\&models\=best_match\&current\=is_day\&m
 
+  // it is possible to get just hours around current
+  // &forecast_hours=6&past_hours=1
 
   let today = "&forecast_days=2";
   let past_future = "&past_days=1&forecast_days=16";
