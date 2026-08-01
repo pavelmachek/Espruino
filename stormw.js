@@ -18,7 +18,7 @@ function msg(s) {
   g.flip();
 }
 
-msg("uploading\ndroid");
+msg("uploading\...");
 
 function getUrl(url, cb) {
   const https = require("http");
@@ -44,7 +44,7 @@ function BgetUrl(url, cb) {
     print("Got http data");
     cb(result.resp)
   }).catch(err => {
-    msg("http\nerror");
+    draw_msg("http\nerror");
   });
 }
 
@@ -61,6 +61,7 @@ function draw_msg(s) {
   g.setColor(0,0,0);
   g.setFont("Vector", 29);
   g.drawString(s, 2, 88);
+  g.flip();
 }
 
 function draw_current() {
@@ -83,207 +84,17 @@ function scale_rain(y0, h, v) { return scale(y0, h, v); }
 function scale_cloud(y0, h, v) { return scale(y0, h, 1 - (v / 100)); }
 
 function thickLine(a, b, c, d) {
+  g.drawLine(a, b-2, c, d-2);
   g.drawLine(a, b-1, c, d-1);
   g.drawLine(a, b, c, d);
   g.drawLine(a, b+1, c, d+1);
+  g.drawLine(a, b+2, c, d+2);
 }
 
-function draw_daily() {
-  g.setColor(1,1,1);
-  g.fillRect(0, 88, 176, 176);
-
-  let data = w_daily;
-  if (!data)
-    return;
-  print(data);
-
-  // Title
-  g.setColor(0,0,0);
-  g.setFont("6x15", 1);
-  g.drawString("Daily Weather", 5, 92);
-
-  let x0 = 20, y0 = 165, w = 140, h = 50;
-  let n = data.time.length;
-  let dx = w / (n - 1);
-
-  // Draw axes
-  g.setColor(0.5, 0.5, 0.5);
-  g.drawLine(x0, y0, x0 + w, y0);
-  g.drawLine(x0, y0, x0, y0 - h);
-
-  // Plot lines
-  for (let i = 0; i < n - 1; i++) {
-    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
-
-    // Scaling factor (Temp range roughly 10 to 40)
-    g.setColor(1, 0, 0); // Red for Max Temp
-    let tMaxY1 = scale_temp(y0, h, data.temperature_2m_max[i]);
-    let tMaxY2 = scale_temp(y0, h, data.temperature_2m_max[i+1]);
-    thickLine(px1, tMaxY1, px2, tMaxY2);
-
-    let tMinY1 = scale_temp(y0, h, data.temperature_2m_min[i]);
-    let tMinY2 = scale_temp(y0, h, data.temperature_2m_min[i+1]);
-    thickLine(px1, tMinY1, px2, tMinY2);
-
-    g.setColor(0, 1, 0); // Green for wind
-    let Y1 = scale_wind(y0, h, data.wind_speed_10m_max[i]);
-    let Y2 = scale_wind(y0, h, data.wind_speed_10m_max[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-
-    g.setColor(0, 0, 1); // Blue for rain
-    Y1 = scale_rain(y0, h, data.precipitation_sum[i]);
-    Y2 = scale_rain(y0, h, data.precipitation_sum[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-  }
-}
-
-function draw_hourly() {
-  g.setColor(1,1,1);
-  g.fillRect(0, 88, 176, 176);
-
-  let data = w_hourly;
-  if (!data)
-    return;
-  print(data);
-
-  // Slice next 6 hours
-  let times = data.time.slice(0, 48);
-  let temps = data.temperature_2m.slice(0, 48);
-  // FIXME: this will start at midnight
-  // print(times, temps);
-
-  let d = new Date();
-
-  // Get the current hour in UTC (0-23)
-  let utcHour = d.getHours() - (d.getTimezoneOffset() / 60);
-
-  print("utc:", utcHour);
-
-  // Title
-  g.setColor(0,0,0);
-  g.setFont("6x15", 1);
-  g.drawString("Hourly", 5, 92);
-
-  let x0 = 20, y0 = 165, w = 140, h = 50;
-  let n = times.length;
-  let dx = w / (n - 1);
-
-  // Draw axes
-  g.setColor(0.5, 0.5, 0.5);
-  g.drawLine(x0, y0, x0 + w, y0);
-  g.drawLine(x0, y0, x0, y0 - h);
-
-  // Plot temperature line (Yellow/Green)
-  for (let i = 0; i < n - 1; i++) {
-    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
-
-    if (i == utcHour) {
-      g.setColor(0, 0, 0);
-      thickLine(0, y0-h, px1, y0-h);
-      thickLine(px1, y0-h, px1, y0);
-    }      
-    
-    // Scaling factor (Temp range roughly 15 to 30 for these hours)
-    let tY1 = scale_temp(y0, h, temps[i]);
-    let tY2 = scale_temp(y0, h, temps[i+1]);
-
-    g.setColor(1, 0, 0);
-    thickLine(px1, tY1, px2, tY2);
-
-    g.setColor(0, 1, 0); // Green for wind
-    let Y1 = scale_wind(y0, h, data.wind_speed_10m[i]);
-    let Y2 = scale_wind(y0, h, data.wind_speed_10m[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-
-    g.setColor(0, 0, 1); // Blue for rain
-    Y1 = scale_rain(y0, h, data.precipitation[i]);
-    Y2 = scale_rain(y0, h, data.precipitation[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-
-    g.setColor(1, 1, 0); // Yellow four cloud cover
-    Y1 = scale_cloud(y0, h, data.cloud_cover[i]);
-    Y2 = scale_cloud(y0, h, data.cloud_cover[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-    
-    // Draw small time indicators at the bottom
-    g.setColor(0.7, 0.7, 0.7);
-    let hourStr = times[i].split("T")[1];
-    g.drawString(hourStr, px1 - 6, y0 + 3);
-  }
-}
-
-function draw_minutely() {
-  g.setColor(1,1,1);
-  g.fillRect(0, 88, 176, 176);
-
-  let data = w_minutely;
-  if (!data)
-    return;
-  print(data);
-
-  // Slice next 6 hours
-  let times = data.time.slice(0, 48);
-  let temps = data.temperature_2m.slice(0, 48);
-  // FIXME: this will start at midnight
-  // print(times, temps);
-
-  let d = new Date();
-
-  // Get the current hour in UTC (0-23)
-  let utcHour = 4;
-  print("utc:", utcHour);
-
-  // Title
-  g.setColor(0,0,0);
-  g.setFont("6x15", 1);
-  g.drawString("Minutely", 5, 92);
-
-  let x0 = 20, y0 = 165, w = 140, h = 50;
-  let n = times.length;
-  let dx = w / (n - 1);
-
-  // Draw axes
-  g.setColor(0.5, 0.5, 0.5);
-  g.drawLine(x0, y0, x0 + w, y0);
-  g.drawLine(x0, y0, x0, y0 - h);
-
-  // Plot temperature line (Yellow/Green)
-  for (let i = 0; i < n - 1; i++) {
-    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
-
-    if (i == utcHour) {
-      g.setColor(0, 0, 0);
-      thickLine(0, y0-h, px1, y0-h);
-      thickLine(px1, y0-h, px1, y0);
-    }      
-    
-    // Scaling factor (Temp range roughly 15 to 30 for these hours)
-    let tY1 = scale_temp(y0, h, temps[i]);
-    let tY2 = scale_temp(y0, h, temps[i+1]);
-
-    g.setColor(1, 0, 0);
-    thickLine(px1, tY1, px2, tY2);
-
-    g.setColor(0, 1, 0); // Green for wind
-    let Y1 = scale_wind(y0, h, data.wind_speed_10m[i]);
-    let Y2 = scale_wind(y0, h, data.wind_speed_10m[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-
-    g.setColor(0, 0, 1); // Blue for rain
-    Y1 = scale_rain(y0, h, data.precipitation[i]);
-    Y2 = scale_rain(y0, h, data.precipitation[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-
-    g.setColor(1, 1, 0); // Yellow four cloud cover
-    Y1 = scale_cloud(y0, h, data.cloud_cover[i]);
-    Y2 = scale_cloud(y0, h, data.cloud_cover[i+1]);
-    thickLine(px1, Y1, px2, Y2);
-    
-    // Draw small time indicators at the bottom
-    g.setColor(0.7, 0.7, 0.7);
-    let hourStr = times[i].split("T")[1];
-    g.drawString(hourStr, px1 - 6, y0 + 3);
-  }
+function thickLineV(a, b, c, d) {
+  g.drawLine(a-1, b, c-1, d);
+  g.drawLine(a, b, c, d);
+  g.drawLine(a+1, b, c+1, d);
 }
 
 function get_url(mode) {
@@ -313,7 +124,7 @@ function get_url(mode) {
 
 function dl_current() {
   let url = get_url("cur");
-  msg(".oO\ncur");
+  draw_msg(".oO\ncur");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
@@ -324,7 +135,7 @@ function dl_current() {
 
 function dl_daily() {
   let url = get_url("daily");
-  msg(".oO\ndaily");
+  draw_msg(".oO\ndaily");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
@@ -335,7 +146,7 @@ function dl_daily() {
 
 function dl_hourly() {
   let url = get_url("hourly");
-  msg(".oO\nhourly");
+  draw_msg(".oO\nhourly");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
@@ -346,7 +157,7 @@ function dl_hourly() {
 
 function dl_minutely() {
   let url = get_url("minutely");
-  msg(".oO\nminutely");
+  draw_msg(".oO\nminutely");
   BgetUrl(url, result => {
     print("Go result", result);
     let data = JSON.parse(result);
@@ -369,13 +180,118 @@ function download() {
 function draw_any() {
   if (mode == "cur")
     return draw_current();
+
+  g.setColor(1,1,1);
+  g.fillRect(0, 88, 176, 176);
   if (mode == "daily")
-    return draw_daily();
+    return draw_common(w_daily);
   if (mode == "hourly")
-    return draw_hourly();
+    return draw_common(w_hourly);
   if (mode == "minutely")
-    return draw_minutely();
+    return draw_common(w_minutely);
 }
+
+function draw_common(data) {
+  if (!data)
+    return;
+
+  // Title
+  g.setColor(0,0,0);
+  g.setFont("6x15", 1);
+  if (mode == "daily")
+    g.drawString("Daily Weather", 5, 89);
+  if (mode == "hourly")
+    g.drawString("         Hourly Weather", 5, 89);
+  if (mode == "minutely")
+    g.drawString("                      Minutely", 5, 89);
+
+  let times = data.time;
+  let utcHour = 0;
+  if (mode == "hourly") {
+    // Slice next 6 hours
+    times = data.time.slice(0, 48);
+    // FIXME: this will start at midnight
+    // print(times, temps);
+
+    let d = new Date();
+    // Get the current hour in UTC (0-23)
+    utcHour = d.getHours() - (d.getTimezoneOffset() / 60);
+  }
+  if (mode == "minutely") {
+    utcHour = 4;
+  }
+
+  print("utc:", utcHour);
+
+  let x0 = 20, y0 = 165, w = 140, h = 50;
+  let n = times.length;
+  let dx = w / (n - 1);
+
+  // Draw axes
+  g.setColor(0.5, 0.5, 0.5);
+  g.drawLine(x0, y0, x0 + w, y0);
+  g.drawLine(x0, y0, x0, y0 - h);
+
+  // Plot lines
+  for (let i = 0; i < n - 1; i++) {
+    let px1 = x0 + (i * dx), px2 = x0 + ((i + 1) * dx);
+
+    if (mode == "daily") {
+      g.setColor(1, 0, 0); // Red for Max Temp
+      let tMaxY1 = scale_temp(y0, h, data.temperature_2m_max[i]);
+      let tMaxY2 = scale_temp(y0, h, data.temperature_2m_max[i+1]);
+      thickLine(px1, tMaxY1, px2, tMaxY2);
+
+      let tMinY1 = scale_temp(y0, h, data.temperature_2m_min[i]);
+      let tMinY2 = scale_temp(y0, h, data.temperature_2m_min[i+1]);
+      thickLine(px1, tMinY1, px2, tMinY2);
+
+      g.setColor(0, 1, 0); // Green for wind
+      let Y1 = scale_wind(y0, h, data.wind_speed_10m_max[i]);
+      let Y2 = scale_wind(y0, h, data.wind_speed_10m_max[i+1]);
+      thickLine(px1, Y1, px2, Y2);
+
+      g.setColor(0, 0, 1); // Blue for rain
+      Y1 = scale_rain(y0, h, data.precipitation_sum[i]);
+      Y2 = scale_rain(y0, h, data.precipitation_sum[i+1]);
+      thickLine(px1, Y1, px2, Y2);
+    } else {
+      if (i == utcHour) {
+        g.setColor(0, 0, 0);
+        thickLine(0, y0-h, px1, y0-h);
+        thickLine(px1, y0-h, px1, y0);
+      }      
+      
+      let tY1 = scale_temp(y0, h, data.temperature_2m[i]);
+      let tY2 = scale_temp(y0, h, data.temperature_2m[i+1]);
+
+      g.setColor(1, 0, 0);
+      thickLine(px1, tY1, px2, tY2);
+
+      g.setColor(0, 1, 0); // Green for wind
+      let Y1 = scale_wind(y0, h, data.wind_speed_10m[i]);
+      let Y2 = scale_wind(y0, h, data.wind_speed_10m[i+1]);
+      thickLine(px1, Y1, px2, Y2);
+
+      g.setColor(0, 0, 1); // Blue for rain
+      Y1 = scale_rain(y0, h, data.precipitation[i]);
+      Y2 = scale_rain(y0, h, data.precipitation[i+1]);
+      thickLine(px1, Y1, px2, Y2);
+
+      g.setColor(1, 1, 0); // Yellow four cloud cover
+      Y1 = scale_cloud(y0, h, data.cloud_cover[i]);
+      Y2 = scale_cloud(y0, h, data.cloud_cover[i+1]);
+      thickLine(px1, Y1, px2, Y2);
+      
+      // Draw small time indicators at the bottom
+      g.setColor(0.7, 0.7, 0.7);
+      let hourStr = times[i].split("T")[1];
+      g.drawString(hourStr, px1 - 6, y0 + 3);
+      
+    }
+  }
+}
+
 
 function draw() {
   g.reset().clear();
@@ -463,7 +379,6 @@ Bangle.on('drag', function(xy) {
 
   let xLimit = g.getHeight() / 2; // Bottom active zone                       
   let yLimit = g.getHeight() / 2; // Bottom active zone                       
-  msg("button");
   
   if (xy.y <= yLimit) {
     if (xy.x <= xLimit) {
@@ -491,8 +406,8 @@ function setupRefreshInterval() {
 
 // This causes [object] on screen
 //Bangle.on('GB', (s) => { msg(s); });
-download();
+//download();
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
-draw_any();
+//draw_any();
 
