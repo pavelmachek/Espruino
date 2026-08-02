@@ -68,7 +68,7 @@ function draw_current() {
   w = w_current;
   if (!w)
     return;  
-  draw_msg(w.temperature_2m + " C\n" + w.weather_code + "\n" + w.wind_speed_10m + "km/h\n");
+  draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
 }
 
 function scale(y0, h, v) {
@@ -102,7 +102,7 @@ function get_url(mode) {
   // ,precipitation_hours,precipitation_probability_max
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
-  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover";
+  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl";
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
   if (mode == "cur")
@@ -112,7 +112,8 @@ function get_url(mode) {
 
   // it is possible to get just hours around current
   // &forecast_hours=6&past_hours=1
-
+  // It is possible to get unix timestamps
+  // &timeformat=unixtime
   let today = "&forecast_days=2";
   let past_future = "&past_days=1&forecast_days=16";
   let short = "&forecast_minutely_15\=24\&past_minutely_15\=4";
@@ -130,8 +131,10 @@ function download() {
   BgetUrl(url, result => {
     print("Got result", result);
     let data = JSON.parse(result);
-    if (mode == "cur")
+    if (mode == "cur") {
       w_current = data.current;
+      w_current.elevation = data.elevation;
+    }
     if (mode == "daily")
       w_daily = data.daily;
     if (mode == "hourly")
@@ -336,7 +339,7 @@ function cycle() {
 let prev_button = 0;
 
 Bangle.on('drag', function(xy) {
-  print(prev_button, xy.b);
+  print("button", prev_button, xy.b);
   if (!xy.b || prev_button) {
     prev_button = xy.b;
     return;
