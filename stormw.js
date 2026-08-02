@@ -6,7 +6,8 @@ eval(require("fs").readFile("sdl.js"));
 // TODO: logarithmic precipation
 // show precipation probability?
 // something to do with cape?
-let pos = { lat : 50, lon : 14.45 };
+//let pos = { lat : 50, lon : 14.45 };
+let pos = { lat : 48, lon : 13.5 };
 
 print("uploading droid test");
 
@@ -105,7 +106,7 @@ function draw_warn() {
     v = data.precipitation[i];;
     if (v > 1.0)
       s += fmt_time(i) + "R,";
-    else if (v > 0.2)
+    else if (v >= 0.2)
       s += fmt_time(i) + "r,";
 
     if (s.length > 10) {
@@ -115,7 +116,7 @@ function draw_warn() {
     }
   }
   // FIXME: I guess we should display something when 0 lines are available
-  draw_msg(t + lines + "lines");
+  draw_msg(t + s + "\n" + lines + "lines");
 }
 
 function scale(y0, h, v) {
@@ -149,7 +150,7 @@ function get_url(mode) {
   // ,precipitation_hours,precipitation_probability_max
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
-  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl,precipitation_probability";
+  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl,precipitation_probability,is_day";
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
   if (mode == "cur")
