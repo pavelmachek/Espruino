@@ -71,6 +71,53 @@ function draw_current() {
   draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
 }
 
+
+function draw_warn() {
+  function fmt_time(i) {
+    return Math.floor(i/4)+":";
+  }
+  // .':| ... same width; space is way wider; , is wider 
+
+  data = w_minutely;
+  if (!data)
+    return;
+  let n = data.temperature_2m.length;
+  let s = "", t = "";
+  let f = 4;
+  let lines = 0;
+
+  for (let i = f; i < n - 1; i++) {
+    let v1, v2, v;
+    
+    v1 = data.temperature_2m[f];
+    v2 = data.temperature_2m[i];
+    if (Math.abs(v1-v2) > 5) {
+      s += fmt_time(i) + "" + v2 + "C,";
+    }
+
+    v = data.wind_speed_10m[i];
+    if (v > 15.0) {
+      s += fmt_time(i) + "W,";
+    else if (v > 7.0)
+      s += fmt_time(i) + "w,";
+    }
+
+    v = data.precipitation[i];;
+    if (v > 1.0)
+      s += fmt_time(i) + "R,";
+    else if (v > 0.2)
+      s += fmt_time(i) + "r,";
+
+    if (s.length > 10) {
+      t = t + s + "\n";
+      s = "";
+      lines ++;
+    }
+  }
+  // FIXME: I guess we should display something when 0 lines are available
+  draw_msg(t + lines + "lines");
+}
+
 function scale(y0, h, v) {
   if (v < 0)
     v = 0;
@@ -102,7 +149,7 @@ function get_url(mode) {
   // ,precipitation_hours,precipitation_probability_max
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
-  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl";
+  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl,precipitation_probability";
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
   if (mode == "cur")
@@ -149,6 +196,8 @@ function download() {
 function draw_any() {
   if (mode == "cur")
     return draw_current();
+  if (mode == "warn")
+    return draw_warn();
 
   g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
@@ -325,12 +374,14 @@ function draw() {
 
 function cycle() {
   if (mode == "cur") {
+    mode = "minutely";
+  } else if (mode == "minutely") {
     mode = "hourly";
   } else if (mode == "hourly") {
     mode = "daily";
   } else if (mode == "daily") {
-    mode = "minutely";
-  } else if (mode == "minutely") {
+    mode = "warn";
+  } else if (mode == "warn") {
     mode = "cur";
   }
   draw_msg(mode);    
