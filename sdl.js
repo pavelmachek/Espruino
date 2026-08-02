@@ -399,7 +399,7 @@ function emulate_button() {
   if (d) {
     let r = peek8(17);
     if (r) {
-      print(r);
+      print("button: ", r);
       d(r & 1023, r > 1023);
     }
   }
