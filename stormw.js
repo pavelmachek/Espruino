@@ -11,7 +11,7 @@ let pos = { lat : 50, lon : 14.45 };
 print("uploading droid test");
 
 function msg(s) {
-  print(s);
+  print("msg", s);
   g.reset().clear();
   g.setFont("Vector", 48);
   g.drawString(s, 10, 10);
@@ -68,7 +68,7 @@ function draw_current() {
   w = w_current;
   if (!w)
     return;  
-  draw_msg(w.temperature + " C\n" + w.weathercode + "\n" + w.windspeed + "km/h\n");
+  draw_msg(w.temperature_2m + " C\n" + w.weather_code + "\n" + w.wind_speed_10m + "km/h\n");
 }
 
 function scale(y0, h, v) {
@@ -99,12 +99,14 @@ function thickLineV(a, b, c, d) {
 
 function get_url(mode) {
   let url = "https://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
-  if (mode == "cur")
-    return url+"&current_weather=true";
-  let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max";
-  let detail = "temperature_2m,precipitation,weather_code,wind_speed_10m,weather_code,cloud_cover,cape,is_day,sunshine_duration";
+  // ,precipitation_hours,precipitation_probability_max
+  let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
+  // ,cape,is_day,sunshine_duration"
+  let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover";
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
+  if (mode == "cur")
+    return url+"&current="+detail;
 
   // forecast\?latitude\=40\&longitude\=14.45\&daily\=sunrise\,sunset\,moonrise\,moonset\,moon_phase\,precipitation_sum\,precipitation_hours\,precipitation_probability_max\&hourly\=precipitation_probability\,cloud_cover\&models\=best_match\&current\=is_day\&m
 
@@ -129,7 +131,7 @@ function download() {
     print("Got result", result);
     let data = JSON.parse(result);
     if (mode == "cur")
-      w_current = data.current_weather;
+      w_current = data.current;
     if (mode == "daily")
       w_daily = data.daily;
     if (mode == "hourly")
