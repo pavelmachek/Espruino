@@ -75,7 +75,15 @@ function draw_current() {
 
 function draw_warn() {
   function fmt_time(i) {
-    return Math.floor(i/4)+":";
+    r = Math.floor(i/4);
+    if (i%4 == 0)
+      return r+"a ";
+    if (i%4 == 1)
+      return r+"b ";
+    if (i%4 == 2)
+      return r+"c ";
+    if (i%4 == 3)
+      return r+"d ";
   }
   // .':| ... same width; space is way wider; , is wider 
 
@@ -87,6 +95,11 @@ function draw_warn() {
   let f = 4;
   let lines = 0;
   let temp_base = data.temperature_2m[f];
+  let wind_base = 3;
+  let day = data.is_day[f];
+  let temp_min = 99;
+  let temp_max = -99;
+  let wind_max = 0;
 
   for (let i = f; i < n - 1; i++) {
     let v;
@@ -96,28 +109,39 @@ function draw_warn() {
       s += fmt_time(i) + "" + v + "C,";
       temp_base = v;
     }
+    if (v < temp_min)
+      temp_min = v;
+    if (v > temp_max)
+      temp_max = v;
 
     v = data.wind_speed_10m[i];
-    if (v > 15.0) {
-      s += fmt_time(i) + "W,";
-    else if (v > 7.0)
-      s += fmt_time(i) + "w,";
+    if (Math.abs(v-wind_base) > 5) {
+      s += fmt_time(i) + "wind " + v + "km/h,";
+      wind_base = v;
     }
+    if (v > wind_max)
+      wind_max = v;
 
-    v = data.precipitation[i];;
+    v = data.precipitation[i];
     if (v > 1.0)
-      s += fmt_time(i) + "R,";
-    else if (v >= 0.2)
-      s += fmt_time(i) + "r,";
+      s += fmt_time(i) + "RAIN,";
 
-    if (s.length > 10) {
+    v = data.is_day[i];
+    if (v != day) {
+      s += fmt_time(i) + "sunset,";
+      day = v;
+    }
+    
+    if (s.length > 1) {
       t = t + s + "\n";
       s = "";
       lines ++;
     }
   }
-  // FIXME: I guess we should display something when 0 lines are available
-  draw_msg(t + s + "\n" + lines + "lines");
+
+  res = t + s + temp_min + ".." + temp_max + "C\nwind " + wind_max + "km/h";
+  print("res: "+res);
+  draw_msg(res);
 }
 
 function scale(y0, h, v) {
