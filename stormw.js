@@ -139,7 +139,7 @@ function draw_warn() {
     }
   }
 
-  res = t + s + temp_min + ".." + temp_max + "C\nwind " + wind_max + "km/h";
+  res = t + s + temp_min + "C.." + temp_max + "C\nwind " + wind_max + "km/h";
   print("res: "+res);
   draw_msg(res);
 }
