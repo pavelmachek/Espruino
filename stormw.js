@@ -6,8 +6,8 @@ eval(require("fs").readFile("sdl.js"));
 // TODO: logarithmic precipation
 // show precipation probability?
 // something to do with cape?
-//let pos = { lat : 50, lon : 14.45 };
-let pos = { lat : 48, lon : 13.5 };
+let pos = { lat : 50, lon : 14.45 };
+//let pos = { lat : 48, lon : 13.5 };
 
 print("uploading droid test");
 
@@ -53,7 +53,7 @@ let w_current = null;
 let w_hourly = null;
 let w_daily = null;
 let w_minutely = null;
-let mode = "minutely";
+let mode = "warn";
 
 function draw_msg(s) {
   g.reset().setColor(1,1,1);
@@ -86,14 +86,15 @@ function draw_warn() {
   let s = "", t = "";
   let f = 4;
   let lines = 0;
+  let temp_base = data.temperature_2m[f];
 
   for (let i = f; i < n - 1; i++) {
-    let v1, v2, v;
+    let v;
     
-    v1 = data.temperature_2m[f];
-    v2 = data.temperature_2m[i];
-    if (Math.abs(v1-v2) > 5) {
-      s += fmt_time(i) + "" + v2 + "C,";
+    v = data.temperature_2m[i];
+    if (Math.abs(v-temp_base) > 5) {
+      s += fmt_time(i) + "" + v + "C,";
+      temp_base = v;
     }
 
     v = data.wind_speed_10m[i];
@@ -173,7 +174,7 @@ function get_url(mode) {
     return url+short+minutely;
 }
 
-function download() {
+function download(mode) {
   let url = get_url(mode);
   draw_msg(".oO\n"+mode);
   BgetUrl(url, result => {
@@ -403,7 +404,7 @@ Bangle.on('drag', function(xy) {
   
   if (xy.y <= yLimit) {
     if (xy.x <= xLimit) {
-      download();
+      download(mode);
     } else {
       cycle();
     }
@@ -427,7 +428,11 @@ function setupRefreshInterval() {
 
 // This causes [object] on screen
 //Bangle.on('GB', (s) => { msg(s); });
-//download();
+if (1) {
+  download("minutely");
+  mode = "warn";
+}
+
 msg("droid\ntest\nready");
 Bangle.on('lock', setupRefreshInterval);
 //draw_any();
