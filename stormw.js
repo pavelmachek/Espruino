@@ -303,7 +303,7 @@ function draw_common(data) {
       if (i == utcHour) {
         g.setColor(0, 0, 0);
         thickLine(0, y0-h, px1, y0-h);
-        thickLine(px1, y0-h, px1, y0);
+        thickLineV(px1, y0-h, px1, y0);
       }      
       
       let tY1 = scale_temp(y0, h, data.temperature_2m[i]);
@@ -452,7 +452,7 @@ function setupRefreshInterval() {
 
 // This causes [object] on screen
 //Bangle.on('GB', (s) => { msg(s); });
-if (1) {
+if (0) {
   download("minutely");
   mode = "warn";
 }
