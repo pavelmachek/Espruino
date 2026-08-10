@@ -15,13 +15,13 @@ class topHalf {
     g.reset();
     var y = 24;
     // Clear the screen area below the widgets (assuming widgets are at the top, roughly 24px)
-    g.clearRect(0, y, g.getWidth(), g.getHeight());
+    g.clearRect(0, y, g.getWidth(), g.getHeight()/2);
 
     var d = new Date();
     var h = d.getHours();
     var m = d.getMinutes();
 
-    var hStr = ("0" + h).slice(-2);
+    var hStr = (" " + h).slice(-2);
     var mStr = ("0" + m).slice(-2);
 
     var tensH = hStr.charAt(0);
@@ -30,13 +30,12 @@ class topHalf {
     var onesM = mStr.charAt(1);
 
     // Layout configuration
-    var startX = 43;
+    var startX = 47;
     var startY = y + 2;
 
     // 1. Tens of Hours (Even smaller font)
     g.setFont("Vector", 40);
-    if (tensH != "0")
-      g.drawString(tensH, startX, startY + 10);
+    g.drawString(tensH, startX, startY + 10);
     var w1 = g.stringWidth(tensH);
 
     // 2. Ones of Hours (Vector 60)
@@ -130,7 +129,6 @@ function draw_current() {
     return;  
   draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
 }
-
 
 function draw_warn() {
   function fmt_time(i) {
@@ -273,7 +271,6 @@ function download(mode) {
       w_minutely = data.minutely_15;
     draw_any();
   });
-  
 }
 
 function draw_any() {
@@ -394,7 +391,6 @@ function draw_common(data) {
 }
 
 function draw() {
-  //draw_current(w_current);
   draw_any();
 }
 
