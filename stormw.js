@@ -7,6 +7,80 @@ eval(require("fs").readFile("sdl.js"));
 // show precipation probability?
 // something to do with cape?
 
+/* topHalf library v0.0
+   draws time in space-effecient manner */
+
+class topHalf {
+  draw() {
+    g.reset();
+    var y = 24;
+    // Clear the screen area below the widgets (assuming widgets are at the top, roughly 24px)
+    g.clearRect(0, y, g.getWidth(), g.getHeight());
+
+    var d = new Date();
+    var h = d.getHours();
+    var m = d.getMinutes();
+
+    var hStr = ("0" + h).slice(-2);
+    var mStr = ("0" + m).slice(-2);
+
+    var tensH = hStr.charAt(0);
+    var onesH = hStr.charAt(1);
+    var tensM = mStr.charAt(0);
+    var onesM = mStr.charAt(1);
+
+    // Layout configuration
+    var startX = 43;
+    var startY = y + 2;
+
+    // 1. Tens of Hours (Even smaller font)
+    g.setFont("Vector", 40);
+    if (tensH != "0")
+      g.drawString(tensH, startX, startY + 10);
+    var w1 = g.stringWidth(tensH);
+
+    // 2. Ones of Hours (Vector 60)
+    g.setFont("Vector", 60);
+    g.drawString(onesH, startX + w1, startY);
+    var w2 = g.stringWidth(onesH);
+
+    g.fillCircle(startX + w1 + w2 - 1, startY + 25, 3);
+    g.fillCircle(startX + w1 + w2 - 1, startY + 40, 3);
+
+    // 3. Tens of Minutes (Vector 60)
+    g.setFont("Vector", 60);
+    g.drawString(tensM, startX + w1 + w2 + 6, startY);
+    var w3 = g.stringWidth(tensM);
+
+    // 4. Ones of Minutes (Smaller font)
+    g.setFont("Vector", 50);
+    g.drawString(onesM, startX + w1 + w2 + w3 + 3, startY + 5);
+    
+    let now = d;
+    let days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    let dateStr = days[now.getDay()] + "\n" + now.getDate();
+    let bat = E.getBattery();
+    if (bat < 30)
+      dateStr += " \nBAT";
+    g.setFont("Vector", 25);
+    g.drawString(dateStr, 2, startY);
+
+    this.draw_bottom(startY + 60);
+  }
+  draw_bottom(startY) {
+    g.setFont("Vector", 30);
+    g.drawString("10:30 Rain\n11:15 Frogs\n11:40 Armageddon", 2, startY);
+  }
+  init() {
+    g.reset().clear();
+    this.draw();
+    Bangle.drawWidgets();
+    var timer = setInterval(this.draw, 60000);
+  }
+}
+
+top = new topHalf();
+
 const LOCATION_FILE = "mylocation.json";
 let pos;
 
@@ -319,39 +393,7 @@ function draw_common(data) {
   }
 }
 
-
 function draw() {
-  g.reset().clear();
-  let now = new Date();
-
-  // 1. Draw Date & Day of Week
-  let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  let dateStr = days[now.getDay()] + " " + now.getDate();
-  let bat = E.getBattery();
-  if (bat < 30)
-    dateStr += " BAT";
-  g.setFont("Vector", 28);
-  g.setColor(0, 0, 0);
-  g.setFontAlign(0, -1);
-  g.drawString(dateStr, g.getWidth() / 2, 2);
-
-  // 2. Build Time String
-  let fontSize = 58;
-  let xstart = 12;
-  g.setFont("Vector", fontSize);
-
-  {
-    let n = now;
-  
-    let hours = ("0" + n.getHours()).slice(-2);
-    let minutes = ("0" + n.getMinutes()).slice(-2);
-    let timeStr = hours + ":" + minutes;
-  
-    g.setColor(0, 0, 0); // Black text
-    g.setFontAlign(-1, -1);
-    g.drawString(timeStr, xstart, 30, fontSize);
-  }
-
   //draw_current(w_current);
   draw_any();
 }
@@ -419,3 +461,4 @@ msg("weather\nfor\n" + pos.location);
 Bangle.on('lock', setupRefreshInterval);
 //draw_any();
 
+top.init();
