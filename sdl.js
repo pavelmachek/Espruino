@@ -97,7 +97,7 @@ function BangleHttp(url) {
   //print("Should do http", url);
   return new Promise((resolve, reject) => {
     const http = require("http");
-    //print("constructing promise", url);
+    print("constructing promise", url);
 
     const req = http.get(url, (res) => {
       let rawData = "";
@@ -115,6 +115,7 @@ function BangleHttp(url) {
         resolve( { resp : rawData });
       });
     }).on("error", (e) => {
+      print("http error", e);
       reject(e); // Added error handling for the request itself
     });
   });
