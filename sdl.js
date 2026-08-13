@@ -99,16 +99,28 @@ function BangleHttp(url) {
     const http = require("http");
     print("constructing promise", url);
 
+    const options = {
+  headers: {
+    "User-Agent": "Mozilla/5.0 (compatible; DebugBot/1.0; +https://example.com)",
+    "Accept": "*/*"
+  }
+};
+
     const req = http.get(url, (res) => {
+      print("statusCode:", res.statusCode);
+      print("headers:", res.headers);
+
       let rawData = "";
 
-      // A chunk of data has been received                                           
+      // A chunk of data has been received
       res.on("data", (chunk) => {
+        print("http: Data");
         rawData += chunk;
       });
 
-      // The whole response has been received                                      
+      // The whole response has been received
       res.on("end", () => {
+        print("http: end");
         if (0) {
           return reject(new Error("something bad"));
         }

@@ -11,6 +11,10 @@ eval(require("fs").readFile("sdl.js"));
    draws time in space-effecient manner */
 
 class topHalf {
+  draw_bottom(startY) {
+    g.setFont("Vector", 30);
+    g.drawString("10:30 Rain\n11:15 Frogs\n11:40 Armageddon", 2, startY);
+  }
   draw() {
     g.reset();
     var y = 24;
@@ -65,10 +69,6 @@ class topHalf {
     g.drawString(dateStr, 2, startY);
 
     this.draw_bottom(startY + 60);
-  }
-  draw_bottom(startY) {
-    g.setFont("Vector", 30);
-    g.drawString("10:30 Rain\n11:15 Frogs\n11:40 Armageddon", 2, startY);
   }
   init() {
     g.reset().clear();
@@ -226,7 +226,8 @@ function thickLineV(a, b, c, d) {
 }
 
 function get_url(mode) {
-  let url = "https://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
+  // https does not work on Linux espruino
+  let url = "http://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
   // ,precipitation_hours,precipitation_probability_max
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
