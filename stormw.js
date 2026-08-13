@@ -11,10 +11,6 @@ eval(require("fs").readFile("sdl.js"));
    draws time in space-effecient manner */
 
 class topHalf {
-  draw_bottom(startY) {
-    g.setFont("Vector", 30);
-    g.drawString("10:30 Rain\n11:15 Frogs\n11:40 Armageddon", 2, startY);
-  }
   draw() {
     g.reset();
     var y = 24;
@@ -69,6 +65,10 @@ class topHalf {
     g.drawString(dateStr, 2, startY);
 
     this.draw_bottom(startY + 60);
+  }
+  draw_bottom(startY) {
+    g.setFont("Vector", 30);
+    g.drawString("10:30 Rain\n11:15 Frogs\n11:40 Armageddon", 2, startY);
   }
   init() {
     g.reset().clear();

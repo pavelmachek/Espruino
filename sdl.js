@@ -99,13 +99,6 @@ function BangleHttp(url) {
     const http = require("http");
     print("constructing promise", url);
 
-    const options = {
-  headers: {
-    "User-Agent": "Mozilla/5.0 (compatible; DebugBot/1.0; +https://example.com)",
-    "Accept": "*/*"
-  }
-};
-
     const req = http.get(url, (res) => {
       print("statusCode:", res.statusCode);
       print("headers:", res.headers);
