@@ -78,6 +78,222 @@ class topHalf {
   }
 }
 
+/* rich text library -- ... */
+/**
+ * Render text with inline font sizes and explicit wrap points.
+ *
+ * Rich text format:
+ *   - Font size changes are written as "<N>" (e.g., "<12>" or "<20>")
+ *   - Wrap points are written as "|" and are the ONLY allowed places to wrap
+ *   - "|" is not drawn.
+ *
+ * @param {object} g        - Graphics context (e.g., Bangle's global g)
+ * @param {string} str      - Rich text string
+ * @param {number} x0       - Start x
+ * @param {number} y0       - Start y
+ * @param {number} maxW     - Max line width in pixels
+ * @param {number} maxLines - Max number of lines to draw (optional; Infinity ok)
+ * @param {object} opts      - Options
+ *        opts.baseSize   - Default font size before any "<N>" tag (default 10)
+ *        opts.lineGap    - Extra pixels between lines (default 2)
+ *        opts.align      - "left" | "center" | "right" (default "left")
+ */
+function renderRichTextWrap(g, str, x0, y0, maxW, maxLines, opts) {
+  const baseSize = opts.baseSize ?? 25;
+  const lineGap = opts.lineGap ?? 2;
+  const align = opts.align ?? "left";
+  const scale = opts.scale ?? 1;
+
+  // --------- Font API hook ----------
+  // Change this if your Bangle environment uses a different way to set font size.
+  // Must also make measureText work consistently with the chosen font.
+  function setFontSize(size) {
+    // Common on Bangle graphics: g.setFont("6x8", size) isn't standard.
+    // Vector fonts often support: g.setFont("Vector", size)
+    // If "Vector" isn't available, replace with the correct call for your firmware.
+    g.setFont("Vector", size*scale);
+  }
+
+  function measureTextWidth(text, size) {
+    setFontSize(size);
+    return g.stringWidth(text);
+  }
+
+  // Height model for line spacing:
+  function lineHeight(size) {
+    // Vector font often uses size as cap height-ish; this is a practical approximation.
+    // If you know exact metrics for your font, adjust here.
+    return size + lineGap;
+  }
+
+  // --------- Parse into tokens ----------
+  // We'll convert the rich string into an array of tokens:
+  // - {type:"text", text:"abc", size:N}
+  // - {type:"wrap"} for '|'
+  const tokens = [];
+  let i = 0;
+  let currentSize = baseSize;
+  let buf = "";
+
+  function flushBuf() {
+    if (buf.length) {
+      tokens.push({ type: "text", text: buf, size: currentSize });
+      buf = "";
+    }
+  }
+
+  while (i < str.length) {
+    const ch = str[i];
+
+    // Wrap point
+    if (ch === "|") {
+      flushBuf();
+      tokens.push({ type: "wrap" });
+      i++;
+      continue;
+    }
+
+    // Font tag: <N>
+    if (ch === "<") {
+      // find closing '>'
+      const j = str.indexOf(">", i + 1);
+      if (j !== -1) {
+        // flush current before changing size
+        flushBuf();
+        const numStr = str.slice(i + 1, j).trim();
+        const parsed = parseInt(numStr, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          currentSize = parsed;
+        } else {
+          currentSize = baseSize;
+        }
+        i = j + 1;
+        continue;
+      }
+      // If malformed tag, just treat '<' as normal text
+    }
+
+    // Normal character
+    buf += ch;
+    i++;
+  }
+  flushBuf();
+
+  // --------- Build wrapped lines ----------
+  // Each line will contain segments: {text, size, w}
+  const lines = [];
+  let line = [];
+  let lineW = 0;
+
+  // For "wrap only at |": we need to remember the last wrap point within the current line.
+  // We'll track the index in `line` where we can break and the width before it.
+  let lastWrap = {
+    lineSegCount: null,
+    lineWidthAtWrap: null
+  };
+
+  function startNewLine() {
+    lines.push(line);
+    line = [];
+    lineW = 0;
+    lastWrap = { lineSegCount: null, lineWidthAtWrap: null };
+  }
+
+  function alignX(lineSegments, baseX, lineWidth) {
+    if (align === "left") return baseX;
+    if (align === "center") return baseX - lineWidth / 2;
+    if (align === "right") return baseX - lineWidth;
+    return baseX;
+  }
+
+  for (let t = 0; t < tokens.length; t++) {
+    const tok = tokens[t];
+
+    if (tok.type === "wrap") {
+      // Candidate wrap point at the current position.
+      // Record that if we must break because of width, we can break here.
+      lastWrap = {
+        lineSegCount: line.length,
+        lineWidthAtWrap: lineW
+      };
+      continue;
+    }
+
+    // tok is text segment with fixed size
+    const w = measureTextWidth(tok.text, tok.size);
+
+    // If token alone is wider than maxW, we'll still place it, but allow wrapping
+    // only at prior '|' points. If no such point exists, we just draw it overflow.
+    if (lineW + w > maxW && line.length > 0) {
+      // We must wrap. Since wrapping is allowed only at '|' points, use lastWrap if available.
+      if (lastWrap.lineSegCount !== null) {
+        // Break line at lastWrap
+        const keep = line.slice(0, lastWrap.lineSegCount);
+        const rest = line.slice(lastWrap.lineSegCount);
+
+        // Commit current line with kept segments
+        lines.push(keep);
+
+        // Start new line with the rest segments
+        line = rest;
+        lineW = lines[lines.length - 1].reduce((acc, s) => acc + s.w, 0);
+        // After moving, we should reset wrap markers; but note that we might have been in the
+        // middle of a region with earlier '|' markers. Since '|' tokens were not inserted into segments,
+        // the marker resets here is correct.
+        lastWrap = { lineSegCount: null, lineWidthAtWrap: null };
+
+        // Now try to add current token to new line
+        if (lineW + w > maxW && line.length > 0) {
+          // If still doesn't fit, but no more wrap points exist, force placement (overflow).
+          // That's consistent with "wrap only at |".
+        }
+        const seg = { text: tok.text, size: tok.size, w };
+        line.push(seg);
+        lineW += w;
+      } else {
+        // No wrap point available on this line: we can't legally wrap.
+        // Place anyway (overflow) to respect "wrap only at |".
+        const seg = { text: tok.text, size: tok.size, w };
+        line.push(seg);
+        lineW += w;
+      }
+    } else {
+      const seg = { text: tok.text, size: tok.size, w };
+      line.push(seg);
+      lineW += w;
+    }
+  }
+
+  // Commit final line
+  if (line.length) lines.push(line);
+
+  // --------- Render lines ----------
+  let y = y0;
+  let drawn = 0;
+
+  for (let li = 0; li < lines.length && drawn < maxLines; li++, drawn++) {
+    const segs = lines[li];
+    const totalW = segs.reduce((acc, s) => acc + s.w, 0);
+    let x = alignX(segs, x0, totalW);
+
+    // Use line height based on the maximum size in this line (more stable)
+    let maxSizeInLine = 0;
+    for (const s of segs) maxSizeInLine = Math.max(maxSizeInLine, s.size);
+    const lh = lineHeight(maxSizeInLine);
+
+    for (const s of segs) {
+      setFontSize(s.size);
+      // Bangle vector fonts: drawString x,y uses baseline at y (implementation-dependent).
+      // If you see vertical misalignment, adjust by a small offset.
+      g.drawString(s.text, x, y+(lh-s.size)*0.7);
+      x += s.w;
+    }
+
+    y += lh;
+  }
+  return y;
+}
+
 top = new topHalf();
 
 const LOCATION_FILE = "mylocation.json";
@@ -123,16 +339,36 @@ function draw_msg(s) {
   g.flip();
 }
 
+function draw_rich(s) {
+  g.reset().setColor(1,1,1);
+  g.fillRect(0, 88, 176, 176);
+
+  g.setColor(0,0,0);
+  renderRichTextWrap(g, s, 0, 88, 176, 3, {});  
+  g.flip();
+}
+
 function draw_current() {
   let w = w_current;
   if (!w)
-    return;  
-  draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
+    return;
+  if (0) 
+    draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
+  else {
+    let s = "<>" + w.temperature_2m + "<15>C,|";
+    s += "<>" + w.cloud_cover + "<15>%,|";
+    s += "<>" + w.precipitation + "<15>mm,|";
+    s += "<>" + w.wind_speed_10m + "<10>km/h,|"
+    s += "<>" + w.pressure_msl + "<10>hPa,|"
+    s += "<>" + w.elevation + "<10>m"
+    draw_rich(s);
+  }
 }
 
 function draw_warn() {
   function fmt_time(i) {
     let r = Math.floor(i/4);
+    if (0) {
     if (i%4 == 0)
       return r+"a ";
     if (i%4 == 1)
@@ -141,6 +377,7 @@ function draw_warn() {
       return r+"c ";
     if (i%4 == 3)
       return r+"d ";
+    }
   }
   // .':| ... same width; space is way wider; , is wider 
 
@@ -229,6 +466,7 @@ function get_url(mode) {
   // https does not work on Linux espruino
   let url = "http://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
   // ,precipitation_hours,precipitation_probability_max
+  //url += "&timeformat=unixtime";
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
   let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl,precipitation_probability,is_day";
@@ -241,8 +479,6 @@ function get_url(mode) {
 
   // it is possible to get just hours around current
   // &forecast_hours=6&past_hours=1
-  // It is possible to get unix timestamps
-  // &timeformat=unixtime
   let today = "&forecast_days=2";
   let past_future = "&past_days=1&forecast_days=16";
   let short = "&forecast_minutely_15\=24\&past_minutely_15\=4";
