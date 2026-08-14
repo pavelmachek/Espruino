@@ -350,11 +350,13 @@ function draw_rich(s) {
   g.flip();
 }
 
+let rich = 1;
+
 function draw_current() {
   let w = w_current;
   if (!w)
     return;
-  if (0) 
+  if (!rich) 
     draw_msg(w.temperature_2m + "C " + w.cloud_cover + "%\n" + w.precipitation + "mm " + w.wind_speed_10m + "km/h\n" + w.pressure_msl + "hPa " + w.elevation + "m");
   else {
     let s = "<>" + w.temperature_2m + "<15>C,|";
@@ -378,9 +380,11 @@ function draw_warn() {
     const HH = String(d.getHours()).padStart(2, "0");
     const MM = String(d.getMinutes()).padStart(2, "0");
 
-    const hhmm = `${HH}:${MM}`; // e.g. "14:30"
+    if (!rich)
+      return `${HH}:${MM}:`; // e.g. "14:30"
 
-    return hhmm;    
+    return `<15>${HH[0]}<>${HH[1]}:${MM[0]}<15>${MM[1]}:`
+
   }
   // .':| ... same width; space is way wider; , is wider 
 
@@ -404,7 +408,7 @@ function draw_warn() {
     
     v = data.temperature_2m[i];
     if (Math.abs(v-temp_base) > 5) {
-      s += fmt_time(i) + "" + v + "C,";
+      s += fmt_time(i) + "<>" + v + "<15>C,|";
       temp_base = v;
     }
     if (v < temp_min)
@@ -414,7 +418,7 @@ function draw_warn() {
 
     v = data.wind_speed_10m[i];
     if (Math.abs(v-wind_base) > 5) {
-      s += ft + "wind " + v + "km/h,";
+      s += ft + "<>w<15>ind <>" + v + "<15>km/h,|";
       wind_base = v;
     }
     if (v > wind_max)
@@ -422,11 +426,11 @@ function draw_warn() {
 
     v = data.precipitation[i];
     if (v > 1.0)
-      s += ft + "RAIN,";
+      s += ft + "<>R<15>AIN,|";
 
     v = data.is_day[i];
     if (v != day) {
-      s += ft + "sunset,";
+      s += ft + "<>s<15>unset,|";
       day = v;
     }
     
@@ -436,9 +440,9 @@ function draw_warn() {
     }
   }
 
-  let res = t + s + temp_min + "C.." + temp_max + "C\nwind " + wind_max + "km/h";
+  let res = t + s + "<>" + temp_min + "C.." + temp_max + "C|<>w<15>ind <>" + wind_max + "<15>km/h";
   print("res: "+res);
-  draw_msg(res);
+  draw_rich(res);
 }
 
 function scale(y0, h, v) {
