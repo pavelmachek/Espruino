@@ -326,8 +326,10 @@ function BgetUrl(url, cb) {
 let w_current = null;
 let w_hourly = null;
 let w_daily = null;
-let w_minutely = null;
+let w_minutely = JSON.parse('{"latitude":50.0,"longitude":14.759998,"generationtime_ms":0.21791458129882812,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":436.0,"minutely_15_units":{"time":"unixtime","weather_code":"wmo code","temperature_2m":"°C","precipitation":"mm","wind_speed_10m":"km/h","cloud_cover":"%","pressure_msl":"hPa","precipitation_probability":"%","is_day":""},"minutely_15":{"time":[1786649400,1786650300,1786651200,1786652100,1786653000,1786653900,1786654800,1786655700,1786656600,1786657500,1786658400,1786659300,1786660200,1786661100,1786662000,1786662900,1786663800,1786664700,1786665600,1786666500,1786667400,1786668300,1786669200,1786670100,1786671000,1786671900,1786672800,1786673700],"weather_code":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"temperature_2m":[18.6,18.5,18.3,18.2,18.1,17.9,17.8,17.7,17.6,17.5,17.4,17.4,17.4,17.4,17.4,17.4,17.5,17.5,17.4,17.3,17.1,16.8,16.6,16.4,16.1,15.9,15.7,15.4],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00],"wind_speed_10m":[7.3,7.8,7.9,8.0,7.9,7.8,8.0,8.0,8.0,8.0,8.2,8.4,8.9,9.6,10.0,10.1,10.0,9.8,9.7,9.2,8.9,8.6,8.1,7.6,7.2,7.1,6.6,6.3],"cloud_cover":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"pressure_msl":[1025.3,1025.3,1025.3,1025.3,1025.2,1025.2,1025.1,1025.0,1025.0,1025.0,1024.9,1024.8,1024.8,1024.7,1024.7,1024.7,1024.6,1024.6,1024.6,1024.6,1024.5,1024.5,1024.5,1024.5,1024.4,1024.4,1024.4,1024.4],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"is_day":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}').minutely_15;
 let mode = "warn";
+
+print(w_minutely);
 
 function draw_msg(s) {
   g.reset().setColor(1,1,1);
@@ -369,15 +371,16 @@ function draw_warn() {
   function fmt_time(i) {
     let r = Math.floor(i/4);
     if (0) {
-    if (i%4 == 0)
-      return r+"a ";
-    if (i%4 == 1)
-      return r+"b ";
-    if (i%4 == 2)
-      return r+"c ";
-    if (i%4 == 3)
-      return r+"d ";
+      return "" + Math.floor((i - getTime()) / 60) + "m:";
     }
+    const d = new Date(i * 1000); // convert to ms
+
+    const HH = String(d.getHours()).padStart(2, "0");
+    const MM = String(d.getMinutes()).padStart(2, "0");
+
+    const hhmm = `${HH}:${MM}`; // e.g. "14:30"
+
+    return hhmm;    
   }
   // .':| ... same width; space is way wider; , is wider 
 
@@ -393,9 +396,11 @@ function draw_warn() {
   let temp_min = 99;
   let temp_max = -99;
   let wind_max = 0;
+  let times = data.time;
 
   for (let i = f; i < n - 1; i++) {
     let v;
+    let ft = fmt_time(times[i]);
     
     v = data.temperature_2m[i];
     if (Math.abs(v-temp_base) > 5) {
@@ -409,7 +414,7 @@ function draw_warn() {
 
     v = data.wind_speed_10m[i];
     if (Math.abs(v-wind_base) > 5) {
-      s += fmt_time(i) + "wind " + v + "km/h,";
+      s += ft + "wind " + v + "km/h,";
       wind_base = v;
     }
     if (v > wind_max)
@@ -417,11 +422,11 @@ function draw_warn() {
 
     v = data.precipitation[i];
     if (v > 1.0)
-      s += fmt_time(i) + "RAIN,";
+      s += ft + "RAIN,";
 
     v = data.is_day[i];
     if (v != day) {
-      s += fmt_time(i) + "sunset,";
+      s += ft + "sunset,";
       day = v;
     }
     
@@ -465,16 +470,16 @@ function thickLineV(a, b, c, d) {
 function get_url(mode) {
   // https does not work on Linux espruino
   let url = "http://api.open-meteo.com/v1/forecast?latitude="+pos.lat+"&longitude="+pos.lon;
+  url += "&timeformat=unixtime";  
   // ,precipitation_hours,precipitation_probability_max
-  //url += "&timeformat=unixtime";
   let daily = "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max";
   // ,cape,is_day,sunshine_duration"
   let detail = "weather_code,temperature_2m,precipitation,wind_speed_10m,cloud_cover,pressure_msl,precipitation_probability,is_day";
+
   let hourly = "&hourly="+detail
   let minutely = "&minutely_15="+detail
   if (mode == "cur")
     return url+"&current="+detail;
-
   // forecast\?latitude\=40\&longitude\=14.45\&daily\=sunrise\,sunset\,moonrise\,moonset\,moon_phase\,precipitation_sum\,precipitation_hours\,precipitation_probability_max\&hourly\=precipitation_probability\,cloud_cover\&models\=best_match\&current\=is_day\&m
 
   // it is possible to get just hours around current
@@ -620,9 +625,6 @@ function draw_common(data) {
       
       // Draw small time indicators at the bottom
       g.setColor(0.7, 0.7, 0.7);
-      let hourStr = times[i].split("T")[1];
-      g.drawString(hourStr, px1 - 6, y0 + 3);
-      
     }
   }
 }
