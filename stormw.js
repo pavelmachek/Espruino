@@ -480,8 +480,12 @@ function draw_timeline() {
   let wind_max = 0;
   let times = data.time;
 
+  if (0) {
   g.reset().setColor(1,1,1);
-  g.fillRect(0, 88, 176, 176);
+    g.fillRect(0, 88, 176, 176);
+  } else {
+    draw_rich(Math.floor(temp_base)+"<15>C");
+  }
 
   for (let i = f; i < n - 1; i++) {
     let v;
