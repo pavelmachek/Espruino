@@ -3,6 +3,8 @@ eval(require("fs").readFile("sdl.js"));
 
 // Storm watch
 
+// Line clock -- provides +-45 min display
+
 // TODO: logarithmic precipation
 // show precipation probability?
 // something to do with cape?
