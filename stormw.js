@@ -329,7 +329,7 @@ let w_current = null;
 let w_hourly = null;
 let w_daily = null;
 let w_minutely = JSON.parse('{"latitude":50.0,"longitude":14.759998,"generationtime_ms":0.21791458129882812,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":436.0,"minutely_15_units":{"time":"unixtime","weather_code":"wmo code","temperature_2m":"°C","precipitation":"mm","wind_speed_10m":"km/h","cloud_cover":"%","pressure_msl":"hPa","precipitation_probability":"%","is_day":""},"minutely_15":{"time":[1786649400,1786650300,1786651200,1786652100,1786653000,1786653900,1786654800,1786655700,1786656600,1786657500,1786658400,1786659300,1786660200,1786661100,1786662000,1786662900,1786663800,1786664700,1786665600,1786666500,1786667400,1786668300,1786669200,1786670100,1786671000,1786671900,1786672800,1786673700],"weather_code":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"temperature_2m":[18.6,18.5,18.3,18.2,18.1,17.9,17.8,17.7,17.6,17.5,17.4,17.4,17.4,17.4,17.4,17.4,17.5,17.5,17.4,17.3,17.1,16.8,16.6,16.4,16.1,15.9,15.7,15.4],"precipitation":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00],"wind_speed_10m":[7.3,7.8,7.9,8.0,7.9,7.8,8.0,8.0,8.0,8.0,8.2,8.4,8.9,9.6,10.0,10.1,10.0,9.8,9.7,9.2,8.9,8.6,8.1,7.6,7.2,7.1,6.6,6.3],"cloud_cover":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"pressure_msl":[1025.3,1025.3,1025.3,1025.3,1025.2,1025.2,1025.1,1025.0,1025.0,1025.0,1024.9,1024.8,1024.8,1024.7,1024.7,1024.7,1024.6,1024.6,1024.6,1024.6,1024.5,1024.5,1024.5,1024.5,1024.4,1024.4,1024.4,1024.4],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"is_day":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}').minutely_15;
-let mode = "gwarn";
+let mode = "timeline";
 
 print(w_minutely);
 
@@ -447,7 +447,7 @@ function draw_warn() {
   draw_rich(res);
 }
 
-function draw_gwarn() {
+function draw_timeline() {
   function fmt_time(i) {
     let r = Math.floor(i/4);
     if (0) {
@@ -499,6 +499,19 @@ function draw_gwarn() {
       } else {
         temp_base = temp_base + 1;
       }
+    }
+
+    
+    {
+      g.setColor(0, 0, 1);
+      v = data.precipitation_probability[i];
+      if (v > 30)
+        g.fillCircle(x, y, 3);
+      v = data.precipitation[i];
+      if (v > 1.0)
+        g.fillCircle(x, y+10, 3);
+      if (v > 3.0)
+        g.fillCircle(x, y+20, 3);
     }
   }
 }
@@ -582,8 +595,8 @@ function draw_any() {
     return draw_current();
   if (mode == "warn")
     return draw_warn();
-  if (mode == "gwarn")
-    return draw_gwarn();
+  if (mode == "timeline")
+    return draw_timeline();
 
   g.setColor(1,1,1);
   g.fillRect(0, 88, 176, 176);
@@ -707,8 +720,8 @@ function cycle() {
   } else if (mode == "daily") {
     mode = "warn";
   } else if (mode == "warn") {
-    mode = "gwarn";
-  } else if (mode == "gwarn") {
+    mode = "timeline";
+  } else if (mode == "timeline") {
     mode = "cur";
   }
   draw_msg(mode);    
