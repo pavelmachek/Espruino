@@ -486,8 +486,15 @@ function draw_timeline() {
   for (let i = f; i < n - 1; i++) {
     let v;
     let ft = fmt_time(times[i]);
-    let x = 10 + i * 10;
+    let x = 40 + i * 5;
     let y = 95;
+
+    {
+      g.setColor(1, 1, 0);
+      v = 1;
+      if (v > 0.3)
+        g.fillCircle(x, y+10, 3);
+    }
     
     v = data.temperature_2m[i];
     if (Math.abs(v-temp_base) > 1) {
@@ -500,8 +507,15 @@ function draw_timeline() {
         temp_base = temp_base + 1;
       }
     }
-
-    
+    {
+      y += 3;
+      g.setColor(0, 1, 0);
+      v = data.wind_speed_10m[i];
+      if (v > 7.0)
+        g.fillCircle(x, y+10, 3);
+      if (v > 14.0)
+        g.fillCircle(x, y+20, 3);
+    }
     {
       g.setColor(0, 0, 1);
       v = data.precipitation_probability[i];
