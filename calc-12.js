@@ -28,9 +28,9 @@ const KEY_WIDTH = SCREEN_WIDTH / 3;
 // Key definitions (3x4 grid)
 // Standard layout: 1-9, 0, Enter, and Command modifier (C)
 const baseKeys = [
-  ["1", "2", "3"],
-  ["4", "5", "6"],
   ["7", "8", "9"],
+  ["4", "5", "6"],
+  ["1", "2", "3"],
   ["C", "0", "ENT"]
 ];
 
@@ -57,7 +57,7 @@ function drawScreen() {
   }
   
   // Draw separator line
-  g.setColor(0.5, 0.5, 0.5);
+  g.setColor(0, 0, 0);
   g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);
 
   // --- Keyboard Area (Bottom) ---
@@ -88,7 +88,7 @@ function drawKeyboard() {
       g.drawRect(x, y, x + KEY_WIDTH, y + KEY_HEIGHT);
       
       // Draw dynamic label
-      g.setColor(1, 1, 1);
+      g.setColor(0, 0, 0);
       g.setFont("Vector", 20);
       let label = getLabel(r, c);
       g.drawString(label, x + (KEY_WIDTH/2) - 10, y + (KEY_HEIGHT/2) - 10);
