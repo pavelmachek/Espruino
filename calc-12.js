@@ -14,7 +14,7 @@ Give me implementation for Bangle.js2. Use full screen for keyboard. During inpu
 // State variables
 let stack = [];
 let currentInput = "";
-let mode = "NORMAL"; // NORMAL, C, or FUNCTION
+let mode = "NORMAL"; // NORMAL, C, C5
 let recording = false;
 let macro = [];
 
@@ -34,9 +34,15 @@ const baseKeys = [
   ["C", "0", "ENT"]
 ];
 
+function drawPreview(previewText) {
+  g.reset().clear();
+    g.setFont("Vector", 32);
+    g.drawString(previewText, 10, 20);
+
+}
+
 function drawScreen() {
-  let previewText = "";
-  g.clear();
+  g.reset().clear();
   
   // --- Display Area (Top) ---
   g.setColor(1, 1, 1);
@@ -44,11 +50,7 @@ function drawScreen() {
   g.setColor(0, 0, 0);
   g.setFont("Vector", 16);
   
-  // Show stack top or preview
-  if (previewText) {
-    g.setFont("Vector", 32);
-    g.drawString(previewText, 10, 20);
-  } else {
+ {
     // Show stack items
     let stackStr = "Stk: " + stack.slice(-3).join(" ");
     g.drawString(stackStr, 5, 5);
@@ -101,10 +103,10 @@ function handleKeyPress(r, c) {
   let key = baseKeys[r][c];
   
   // Show preview on top half while handling
-  drawScreen(getLabel(r, c));
+  drawPreview(getLabel(r, c));
 
   if (key >= "0" && key <= "9") {
-    if (mode === "C") {
+    if (mode === "C5") {
       // Extended functions e.g., C51 for sin()
       if (key === "1") { // C51 -> sin()
         if (stack.length > 0) {
@@ -160,6 +162,8 @@ function handleKeyPress(r, c) {
         stack.push(a / b);
       }
       mode = "NORMAL";
+    } else if (key === "5" && currentInput === "") { // C5: /
+      mode = "C5";
     }
   }
 
