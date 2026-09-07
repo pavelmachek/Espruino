@@ -21,8 +21,8 @@ let macro = [];
 // Layout definitions
 const SCREEN_WIDTH = g.getWidth();
 const SCREEN_HEIGHT = g.getHeight();
-const DISPLAY_HEIGHT = 80;
-const KEY_HEIGHT = (SCREEN_HEIGHT - DISPLAY_HEIGHT) / 4;
+const DISPLAY_HEIGHT = 0;
+const KEY_HEIGHT = SCREEN_HEIGHT / 4;
 const KEY_WIDTH = SCREEN_WIDTH / 3;
 
 // Key definitions (3x4 grid)
@@ -34,11 +34,13 @@ const baseKeys = [
   ["C", "0", "ENT"]
 ];
 
-function drawPreview(previewText) {
+function drawPreview(previewText, pos) {
   g.reset().clear();
-    g.setFont("Vector", 32);
-    g.drawString(previewText, 10, 20);
 
+  //drawKeyboard();
+  
+  g.setFont("Vector", 60);
+  g.drawString(previewText, 10, pos);
 }
 
 function drawScreen() {
@@ -46,7 +48,11 @@ function drawScreen() {
   
   // --- Display Area (Top) ---
   g.setColor(1, 1, 1);
-  g.fillRect(0, 0, SCREEN_WIDTH, DISPLAY_HEIGHT);
+  g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
+
+  // --- Keyboard Area (Bottom) ---
+  drawKeyboard();
+
   g.setColor(0, 0, 0);
   g.setFont("Vector", 16);
   
@@ -61,9 +67,7 @@ function drawScreen() {
   // Draw separator line
   g.setColor(0, 0, 0);
   g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);
-
-  // --- Keyboard Area (Bottom) ---
-  drawKeyboard();
+  
 }
 
 function getLabel(r, c) {
@@ -91,7 +95,7 @@ function drawKeyboard() {
       
       // Draw dynamic label
       g.setColor(0, 0, 0);
-      g.setFont("Vector", 20);
+      g.setFont("Vector", 28);
       let label = getLabel(r, c);
       g.drawString(label, x + (KEY_WIDTH/2) - 10, y + (KEY_HEIGHT/2) - 10);
     }
@@ -103,7 +107,11 @@ function handleKeyPress(r, c) {
   let key = baseKeys[r][c];
   
   // Show preview on top half while handling
-  drawPreview(getLabel(r, c));
+  if (r>=2)
+    drawPreview(getLabel(r, c), 0);
+  else
+    drawPreview(getLabel(r, c), SCREEN_HEIGHT - 60);
+    
 }
 
 function handleKeyRelease(r, c) {
@@ -184,7 +192,7 @@ Bangle.on('drag', function(xy) {
   let x = xy.x;
   let y = xy.y;
   
-  if (y > DISPLAY_HEIGHT) {
+  if (y >= DISPLAY_HEIGHT) {
     let c = Math.floor(x / KEY_WIDTH);
     let r = Math.floor((y - DISPLAY_HEIGHT) / KEY_HEIGHT);
     if (r >= 0 && r < 4 && c >= 0 && c < 3) {
