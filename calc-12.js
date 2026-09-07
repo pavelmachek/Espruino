@@ -119,25 +119,40 @@ function execute(cmd) {
     return -3;
   if (cmd[0] != "C")
     return -3;
+  if (stack.length < 1) {
+    print("Not enough stack");
+    return -1;
+  }
+  if (cmd === "C51") {
+    let a = stack.pop();
+    stack.push(Math.sin(a));
+    return 0;
+  }
   if (stack.length < 2) {
     print("Not enough stack");
     return -1;
   }
-  let b = stack.pop();
-  let a = stack.pop();
   if (cmd === "C1") {
+    let b = stack.pop();
+    let a = stack.pop();
     stack.push(a + b);
     return 0;
   }
   if (cmd === "C2") {
+    let b = stack.pop();
+    let a = stack.pop();
     stack.push(a - b);
     return 0;
   }
   if (cmd === "C3") {
+    let b = stack.pop();
+    let a = stack.pop();
     stack.push(a * b);
     return 0;
   }
   if (cmd === "C4") {
+    let b = stack.pop();
+    let a = stack.pop();
     stack.push(a / b);
     return 0;
   }
@@ -161,13 +176,13 @@ function handleKeyRelease(r, c) {
       return;
     }
     currentInput += key;
-      // Handle operations if in C mode
-  if (!execute(currentInput)) {
-    currentInput = "";
-    mode = "NORMAL";
-    drawScreen();
-    return;
-  }
+    // Handle operations if in C mode
+    if (!execute(currentInput)) {
+      currentInput = "";
+      mode = "NORMAL";
+      drawScreen();
+      return;
+    }
     drawScreen();
     return;
   }
