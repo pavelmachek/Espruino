@@ -104,33 +104,11 @@ function handleKeyPress(r, c) {
   
   // Show preview on top half while handling
   drawPreview(getLabel(r, c));
+}
 
-  if (key >= "0" && key <= "9") {
-    if (mode === "C5") {
-      // Extended functions e.g., C51 for sin()
-      if (key === "1") { // C51 -> sin()
-        if (stack.length > 0) {
-          let val = stack.pop();
-          stack.push(Math.sin(val));
-        }
-      }
-      mode = "NORMAL";
-    } else {
-      currentInput += key;
-    }
-  } else if (key === "ENT") {
-    if (currentInput !== "") {
-      stack.push(parseFloat(currentInput));
-      currentInput = "";
-    }
-  } else if (key === "C") {
-    if (currentInput === "") {
-      mode = (mode === "C") ? "NORMAL" : "C";
-    } else {
-      // Backspace during input
-      currentInput = currentInput.slice(0, -1);
-    }
-  }
+function handleKeyRelease(r, c) {
+  let key = baseKeys[r][c];
+  print("Executing", key);
 
   // Handle operations if in C mode
   if (mode === "C") {
@@ -164,6 +142,36 @@ function handleKeyPress(r, c) {
       mode = "NORMAL";
     } else if (key === "5" && currentInput === "") { // C5: /
       mode = "C5";
+    } else
+      mode = "NORMAL";
+    drawScreen();
+    return;
+  }
+
+  if (key >= "0" && key <= "9") {
+    if (mode === "C5") {
+      // Extended functions e.g., C51 for sin()
+      if (key === "1") { // C51 -> sin()
+        if (stack.length > 0) {
+          let val = stack.pop();
+          stack.push(Math.sin(val));
+        }
+      }
+      mode = "NORMAL";
+    } else {
+      currentInput += key;
+    }
+  } else if (key === "ENT") {
+    if (currentInput !== "") {
+      stack.push(parseFloat(currentInput));
+      currentInput = "";
+    }
+  } else if (key === "C") {
+    if (currentInput === "") {
+      mode = (mode === "C") ? "NORMAL" : "C";
+    } else {
+      // Backspace during input
+      currentInput = currentInput.slice(0, -1);
     }
   }
 
@@ -182,6 +190,8 @@ Bangle.on('drag', function(xy) {
     if (r >= 0 && r < 4 && c >= 0 && c < 3) {
       if (xy.b)
         handleKeyPress(r, c);
+      else
+        handleKeyRelease(r, c);
     }
   }
 });
