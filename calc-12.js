@@ -1,0 +1,186 @@
+#!bin/espruino
+eval(require("fs").readFile("sdl.js"));
+
+/*
+Design 12 keys calculator. It should use RPN. It should use 0-9. and enter keys.
+
+Logic would be like this: If I'm entering number starting with, well, number, it adds the number to the stack. We will call entering empty line "C". During number input, .. means backspace, elsewhere, . is backspace. Basic operations such as +, -, *, / should be C1, C2, C3, C4. It should be possible to do more functions, for example sin() on C51.
+
+Give me implementation for Bangle.js2. Use full screen for keyboard. During input, key labels should change according to the current state. So for example after C, "1" key should display "1+". It should be possible to record and run programs. Display should overlay input area to save space. Keys should react on release, and while key is pressed, big label of the key should be displayed in the other half of screen, so it is not covered by the finger
+
+  */
+  
+// RPN Calculator for Bangle.js 2
+// State variables
+let stack = [];
+let currentInput = "";
+let mode = "NORMAL"; // NORMAL, C, or FUNCTION
+let recording = false;
+let macro = [];
+
+// Layout definitions
+const SCREEN_WIDTH = g.getWidth();
+const SCREEN_HEIGHT = g.getHeight();
+const DISPLAY_HEIGHT = 80;
+const KEY_HEIGHT = (SCREEN_HEIGHT - DISPLAY_HEIGHT) / 4;
+const KEY_WIDTH = SCREEN_WIDTH / 3;
+
+// Key definitions (3x4 grid)
+// Standard layout: 1-9, 0, Enter, and Command modifier (C)
+const baseKeys = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  ["C", "0", "ENT"]
+];
+
+function drawScreen() {
+  let previewText = "";
+  g.clear();
+  
+  // --- Display Area (Top) ---
+  g.setColor(1, 1, 1);
+  g.fillRect(0, 0, SCREEN_WIDTH, DISPLAY_HEIGHT);
+  g.setColor(0, 0, 0);
+  g.setFont("Vector", 16);
+  
+  // Show stack top or preview
+  if (previewText) {
+    g.setFont("Vector", 32);
+    g.drawString(previewText, 10, 20);
+  } else {
+    // Show stack items
+    let stackStr = "Stk: " + stack.slice(-3).join(" ");
+    g.drawString(stackStr, 5, 5);
+    g.drawString("In: " + currentInput, 5, 30);
+    g.drawString("Mode: " + mode, 5, 55);
+  }
+  
+  // Draw separator line
+  g.setColor(0.5, 0.5, 0.5);
+  g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);
+
+  // --- Keyboard Area (Bottom) ---
+  drawKeyboard();
+}
+
+function getLabel(r, c) {
+  let base = baseKeys[r][c];
+  
+  // Dynamic label changes based on state
+  if (mode === "C") {
+    if (base === "1") return "1+";
+    if (base === "2") return "2-";
+    if (base === "3") return "3*";
+    if (base === "4") return "4/";
+  }
+  return base;
+}
+
+function drawKeyboard() {
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 3; c++) {
+      let x = c * KEY_WIDTH;
+      let y = DISPLAY_HEIGHT + (r * KEY_HEIGHT);
+      
+      // Draw key box
+      g.setColor(0.2, 0.2, 0.2);
+      g.drawRect(x, y, x + KEY_WIDTH, y + KEY_HEIGHT);
+      
+      // Draw dynamic label
+      g.setColor(1, 1, 1);
+      g.setFont("Vector", 20);
+      let label = getLabel(r, c);
+      g.drawString(label, x + (KEY_WIDTH/2) - 10, y + (KEY_HEIGHT/2) - 10);
+    }
+  }
+}
+
+// Handle key press logic
+function handleKeyPress(r, c) {
+  let key = baseKeys[r][c];
+  
+  // Show preview on top half while handling
+  drawScreen(getLabel(r, c));
+
+  if (key >= "0" && key <= "9") {
+    if (mode === "C") {
+      // Extended functions e.g., C51 for sin()
+      if (key === "1") { // C51 -> sin()
+        if (stack.length > 0) {
+          let val = stack.pop();
+          stack.push(Math.sin(val));
+        }
+      }
+      mode = "NORMAL";
+    } else {
+      currentInput += key;
+    }
+  } else if (key === "ENT") {
+    if (currentInput !== "") {
+      stack.push(parseFloat(currentInput));
+      currentInput = "";
+    }
+  } else if (key === "C") {
+    if (currentInput === "") {
+      mode = (mode === "C") ? "NORMAL" : "C";
+    } else {
+      // Backspace during input
+      currentInput = currentInput.slice(0, -1);
+    }
+  }
+
+  // Handle operations if in C mode
+  if (mode === "C") {
+    if (key === "1" && currentInput === "") { // C1: +
+      if (stack.length >= 2) {
+        let b = stack.pop();
+        let a = stack.pop();
+        stack.push(a + b);
+      }
+      mode = "NORMAL";
+    } else if (key === "2" && currentInput === "") { // C2: -
+      if (stack.length >= 2) {
+        let b = stack.pop();
+        let a = stack.pop();
+        stack.push(a - b);
+      }
+      mode = "NORMAL";
+    } else if (key === "3" && currentInput === "") { // C3: *
+      if (stack.length >= 2) {
+        let b = stack.pop();
+        let a = stack.pop();
+        stack.push(a * b);
+      }
+      mode = "NORMAL";
+    } else if (key === "4" && currentInput === "") { // C4: /
+      if (stack.length >= 2) {
+        let b = stack.pop();
+        let a = stack.pop();
+        stack.push(a / b);
+      }
+      mode = "NORMAL";
+    }
+  }
+
+  // Refresh display after a short delay
+  setTimeout(() => drawScreen(), 300);
+}
+
+// Touch event listener for Bangle.js 2
+Bangle.on('drag', function(xy) {
+  let x = xy.x;
+  let y = xy.y;
+  
+  if (y > DISPLAY_HEIGHT) {
+    let c = Math.floor(x / KEY_WIDTH);
+    let r = Math.floor((y - DISPLAY_HEIGHT) / KEY_HEIGHT);
+    if (r >= 0 && r < 4 && c >= 0 && c < 3) {
+      if (xy.b)
+        handleKeyPress(r, c);
+    }
+  }
+});
+
+// Initial draw
+drawScreen();
