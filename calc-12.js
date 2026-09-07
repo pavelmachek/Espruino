@@ -110,8 +110,33 @@ function handleKeyPress(r, c) {
   if (r>=2)
     drawPreview(getLabel(r, c), 0);
   else
-    drawPreview(getLabel(r, c), SCREEN_HEIGHT - 60);
-    
+    drawPreview(getLabel(r, c), SCREEN_HEIGHT - 60);    
+}
+
+function execute(cmd) {
+  if (stack.length < 2) {
+    print("Not enough stack");
+    return -1;
+  }
+  let b = stack.pop();
+  let a = stack.pop();
+  if (cmd === "C1") {
+    stack.push(a + b);
+    return 0;
+  }
+  if (cmd === "C2") {
+    stack.push(a - b);
+    return 0;
+  }
+  if (cmd === "C3") {
+    stack.push(a * b);
+    return 0;
+  }
+  if (cmd === "C4") {
+    stack.push(a / b);
+    return 0;
+  }
+  return -2;
 }
 
 function handleKeyRelease(r, c) {
@@ -120,33 +145,8 @@ function handleKeyRelease(r, c) {
 
   // Handle operations if in C mode
   if (mode === "C") {
-    if (key === "1" && currentInput === "") { // C1: +
-      if (stack.length >= 2) {
-        let b = stack.pop();
-        let a = stack.pop();
-        stack.push(a + b);
-      }
-      mode = "NORMAL";
-    } else if (key === "2" && currentInput === "") { // C2: -
-      if (stack.length >= 2) {
-        let b = stack.pop();
-        let a = stack.pop();
-        stack.push(a - b);
-      }
-      mode = "NORMAL";
-    } else if (key === "3" && currentInput === "") { // C3: *
-      if (stack.length >= 2) {
-        let b = stack.pop();
-        let a = stack.pop();
-        stack.push(a * b);
-      }
-      mode = "NORMAL";
-    } else if (key === "4" && currentInput === "") { // C4: /
-      if (stack.length >= 2) {
-        let b = stack.pop();
-        let a = stack.pop();
-        stack.push(a / b);
-      }
+    if (currentInput === "") {
+      execute("C" + key);
       mode = "NORMAL";
     } else if (key === "5" && currentInput === "") { // C5: /
       mode = "C5";
@@ -184,7 +184,8 @@ function handleKeyRelease(r, c) {
   }
 
   // Refresh display after a short delay
-  setTimeout(() => drawScreen(), 300);
+  //setTimeout(() => drawScreen(), 300);
+  drawScreen();
 }
 
 // Touch event listener for Bangle.js 2
