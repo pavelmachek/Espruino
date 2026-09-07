@@ -114,6 +114,11 @@ function handleKeyPress(r, c) {
 }
 
 function execute(cmd) {
+  print("Execute?", cmd);
+  if (!cmd)
+    return -3;
+  if (cmd[0] != "C")
+    return -3;
   if (stack.length < 2) {
     print("Not enough stack");
     return -1;
@@ -141,20 +146,7 @@ function execute(cmd) {
 
 function handleKeyRelease(r, c) {
   let key = baseKeys[r][c];
-  print("Executing", key);
-
-  // Handle operations if in C mode
-  if (mode === "C") {
-    if (currentInput === "") {
-      execute("C" + key);
-      mode = "NORMAL";
-    } else if (key === "5" && currentInput === "") { // C5: /
-      mode = "C5";
-    } else
-      mode = "NORMAL";
-    drawScreen();
-    return;
-  }
+  print("Executing", key, "input", currentInput);
 
   if (key >= "0" && key <= "9") {
     if (mode === "C5") {
@@ -166,15 +158,31 @@ function handleKeyRelease(r, c) {
         }
       }
       mode = "NORMAL";
-    } else {
-      currentInput += key;
+      return;
     }
-  } else if (key === "ENT") {
+    currentInput += key;
+      // Handle operations if in C mode
+  if (!execute(currentInput)) {
+    currentInput = "";
+    mode = "NORMAL";
+    drawScreen();
+    return;
+  }
+    drawScreen();
+    return;
+  }
+
+  if (key === "ENT") {
     if (currentInput !== "") {
       stack.push(parseFloat(currentInput));
       currentInput = "";
+      return;
     }
-  } else if (key === "C") {
+    currentInput = "C";
+    return;
+  }
+
+  if (key === "C") {
     if (currentInput === "") {
       mode = (mode === "C") ? "NORMAL" : "C";
     } else {
