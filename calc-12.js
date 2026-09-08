@@ -11,8 +11,6 @@ Give me implementation for Bangle.js2. Use full screen for keyboard. During inpu
   */
   
 // RPN Calculator for Bangle.js 2
-// State variables
-let stack = [];
 let input = "";
 
 // Layout definitions
@@ -21,6 +19,60 @@ const SCREEN_HEIGHT = g.getHeight();
 const DISPLAY_HEIGHT = 0;
 const KEY_HEIGHT = SCREEN_HEIGHT / 4;
 const KEY_WIDTH = SCREEN_WIDTH / 3;
+
+class CPU {
+  constructor() {
+    this.stack = [];
+  }
+
+  execute(cmd) {
+    print("Execute?", cmd);
+    if (!cmd)
+      return -3;
+    if (cmd[0] != "C")
+      return -3;
+    if (this.stack.length < 1) {
+      print("Not enough stack");
+      return -1;
+    }
+    if (cmd === "C51") {
+      let a = this.stack.pop();
+      this.stack.push(Math.sin(a));
+      return 0;
+    }
+    if (this.stack.length < 2) {
+      print("Not enough stack");
+      return -1;
+    }
+    if (cmd === "C1") {
+      let b = this.stack.pop();
+      let a = this.stack.pop();
+      this.stack.push(a + b);
+      return 0;
+    }
+    if (cmd === "C2") {
+      let b = this.stack.pop();
+      let a = this.stack.pop();
+      this.stack.push(a - b);
+      return 0;
+    }
+    if (cmd === "C3") {
+      let b = this.stack.pop();
+      let a = this.stack.pop();
+      this.stack.push(a * b);
+      return 0;
+    }
+    if (cmd === "C4") {
+      let b = this.stack.pop();
+      let a = this.stack.pop();
+      this.stack.push(a / b);
+      return 0;
+    }
+    return -2;
+  }
+}
+
+let cpu = new CPU();
 
 // Key definitions (3x4 grid)
 // Standard layout: 1-9, 0, Enter, and Command modifier (C)
@@ -53,15 +105,14 @@ function drawScreen() {
   
  {
     // Show stack items
-    let stackStr = "Stk: " + stack.slice(-3).join(" ");
+    let stackStr = "Stk: " + cpu.stack.slice(-3).join(" ");
     g.drawString(stackStr, 5, 5);
     g.drawString("In: " + input, 5, 30);
   }
   
   // Draw separator line
   g.setColor(0, 0, 0);
-  g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);
-  
+  g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);  
 }
 
 function getLabel(r, c) {
@@ -107,52 +158,6 @@ function handleKeyPress(r, c) {
     drawPreview(getLabel(r, c), SCREEN_HEIGHT - 60);    
 }
 
-function execute(cmd) {
-  print("Execute?", cmd);
-  if (!cmd)
-    return -3;
-  if (cmd[0] != "C")
-    return -3;
-  if (stack.length < 1) {
-    print("Not enough stack");
-    return -1;
-  }
-  if (cmd === "C51") {
-    let a = stack.pop();
-    stack.push(Math.sin(a));
-    return 0;
-  }
-  if (stack.length < 2) {
-    print("Not enough stack");
-    return -1;
-  }
-  if (cmd === "C1") {
-    let b = stack.pop();
-    let a = stack.pop();
-    stack.push(a + b);
-    return 0;
-  }
-  if (cmd === "C2") {
-    let b = stack.pop();
-    let a = stack.pop();
-    stack.push(a - b);
-    return 0;
-  }
-  if (cmd === "C3") {
-    let b = stack.pop();
-    let a = stack.pop();
-    stack.push(a * b);
-    return 0;
-  }
-  if (cmd === "C4") {
-    let b = stack.pop();
-    let a = stack.pop();
-    stack.push(a / b);
-    return 0;
-  }
-  return -2;
-}
-
 function handleKeyRelease(r, c) {
   let key = baseKeys[r][c];
   print("Executing", key, "input", input);
@@ -160,7 +165,7 @@ function handleKeyRelease(r, c) {
   if (key >= "0" && key <= "9") {
     input += key;
     // Handle operations if in C mode
-    if (!execute(input)) {
+    if (!cpu.execute(input)) {
       input = "";
       drawScreen();
       return;
@@ -171,7 +176,7 @@ function handleKeyRelease(r, c) {
 
   if (key === "ENT") {
     if (input !== "") {
-      stack.push(parseFloat(input));
+      cpu.stack.push(parseFloat(input));
       input = "";
       return;
     }
