@@ -84,12 +84,15 @@ class Input {
   }
 
   draw_over(t, x, y, size) {
+    g.setColor(1, 1, 1);
+    g.fillRect(x, y, x+70, y+size);
+    g.setColor(0, 0, 0);
     g.setFont("Vector", size);
     g.drawString(t, 10, y);
   }
 
   drawPreview(t, pos) {
-    this.drawKeyboard();
+    this.drawScreen();
     this.draw_over(t, 10, pos, 60);
   }
 
