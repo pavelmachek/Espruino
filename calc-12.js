@@ -83,17 +83,21 @@ class Input {
     ];
   }
 
-  drawPreview(previewText, pos) {
+  draw_over(t, x, y, size) {
+    g.setFont("Vector", size);
+    g.drawString(t, 10, y);
+  }
+
+  drawPreview(t, pos) {
     this.drawKeyboard();
-    g.setFont("Vector", 60);
-    g.drawString(previewText, 10, pos);
+    this.draw_over(t, 10, pos, 60);
   }
 
   drawScreen() {
     g.reset().clear();
     
     // --- Display Area (Top) ---
-    g.setColor(1, 1, 1);
+    g.setColor(0.75, 1, 1);
     g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
 
     // --- Keyboard Area (Bottom) ---
