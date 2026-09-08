@@ -66,21 +66,21 @@ class CPU {
   }
 }
 
-// Key definitions (3x4 grid)
-// Standard layout: 1-9, 0, Enter, and Command modifier (C)
-const baseKeys = [
-  ["7", "8", "9"],
-  ["4", "5", "6"],
-  ["1", "2", "3"],
-  ["C", "0", "ENT"]
-];
-
 class Input {
   constructor() {
     this.input = "";
     this.DISPLAY_HEIGHT = 0;
     this.KEY_HEIGHT = SCREEN_HEIGHT / 4;
     this.KEY_WIDTH = SCREEN_WIDTH / 3;
+
+    // Key definitions (3x4 grid)
+    // Standard layout: 1-9, 0, Enter, and Command modifier (C)
+    this.baseKeys = [
+      ["7", "8", "9"],
+      ["4", "5", "6"],
+      ["1", "2", "3"],
+      ["C", "0", "E"]
+    ];
   }
 
   drawPreview(previewText, pos) {
@@ -116,7 +116,7 @@ class Input {
   }
 
   getLabel(r, c) {
-    let base = baseKeys[r][c];
+    let base = this.baseKeys[r][c];
     
     // Dynamic label changes based on state
     if (this.input && this.input[0] === "C") {
@@ -149,7 +149,7 @@ class Input {
 
   // Handle key press logic
   handleKeyPress(r, c) {
-    let key = baseKeys[r][c];
+    let key = this.baseKeys[r][c];
     
     // Show preview on top half while handling
     if (r>=2)
@@ -159,7 +159,7 @@ class Input {
   }
 
   handleKeyRelease(r, c) {
-    let key = baseKeys[r][c];
+    let key = this.baseKeys[r][c];
     print("Executing", key, "input", this.input);
 
     if (key >= "0" && key <= "9") {
@@ -174,7 +174,7 @@ class Input {
       return;
     }
 
-    if (key === "ENT") {
+    if (key === "E") {
       if (this.input !== "") {
         cpu.stack.push(parseFloat(this.input));
         this.input = "";
