@@ -10,15 +10,9 @@ Give me implementation for Bangle.js2. Use full screen for keyboard. During inpu
 
   */
   
-// RPN Calculator for Bangle.js 2
-let input = "";
-
 // Layout definitions
 const SCREEN_WIDTH = g.getWidth();
 const SCREEN_HEIGHT = g.getHeight();
-const DISPLAY_HEIGHT = 0;
-const KEY_HEIGHT = SCREEN_HEIGHT / 4;
-const KEY_WIDTH = SCREEN_WIDTH / 3;
 
 class CPU {
   constructor() {
@@ -72,7 +66,6 @@ class CPU {
   }
 }
 
-let cpu = new CPU();
 
 // Key definitions (3x4 grid)
 // Standard layout: 1-9, 0, Enter, and Command modifier (C)
@@ -83,14 +76,22 @@ const baseKeys = [
   ["C", "0", "ENT"]
 ];
 
-function drawPreview(previewText, pos) {
+class Input {
+  constructor() {
+    this.input = "";
+    this.DISPLAY_HEIGHT = 0;
+    this.KEY_HEIGHT = SCREEN_HEIGHT / 4;
+    this.KEY_WIDTH = SCREEN_WIDTH / 3;
+  }
+
+  drawPreview(previewText, pos) {
   g.reset().clear();
-  //drawKeyboard();
+  //this.drawKeyboard();
   g.setFont("Vector", 60);
   g.drawString(previewText, 10, pos);
 }
 
-function drawScreen() {
+  drawScreen() {
   g.reset().clear();
   
   // --- Display Area (Top) ---
@@ -98,7 +99,7 @@ function drawScreen() {
   g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
 
   // --- Keyboard Area (Bottom) ---
-  drawKeyboard();
+  this.drawKeyboard();
 
   g.setColor(0, 0, 0);
   g.setFont("Vector", 16);
@@ -107,19 +108,19 @@ function drawScreen() {
     // Show stack items
     let stackStr = "Stk: " + cpu.stack.slice(-3).join(" ");
     g.drawString(stackStr, 5, 5);
-    g.drawString("In: " + input, 5, 30);
+    g.drawString("In: " + this.input, 5, 30);
   }
   
   // Draw separator line
   g.setColor(0, 0, 0);
-  g.drawLine(0, DISPLAY_HEIGHT, SCREEN_WIDTH, DISPLAY_HEIGHT);  
+  g.drawLine(0, this.DISPLAY_HEIGHT, SCREEN_WIDTH, this.DISPLAY_HEIGHT);  
 }
 
-function getLabel(r, c) {
+ getLabel(r, c) {
   let base = baseKeys[r][c];
   
   // Dynamic label changes based on state
-  if (input && input[0] === "C") {
+  if (this.input && this.input[0] === "C") {
     if (base === "1") return "1+";
     if (base === "2") return "2-";
     if (base === "3") return "3*";
@@ -128,88 +129,93 @@ function getLabel(r, c) {
   return base;
 }
 
-function drawKeyboard() {
+ drawKeyboard() {
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 3; c++) {
-      let x = c * KEY_WIDTH;
-      let y = DISPLAY_HEIGHT + (r * KEY_HEIGHT);
+      let x = c * this.KEY_WIDTH;
+      let y = this.DISPLAY_HEIGHT + (r * this.KEY_HEIGHT);
       
       // Draw key box
       g.setColor(0.2, 0.2, 0.2);
-      g.drawRect(x, y, x + KEY_WIDTH, y + KEY_HEIGHT);
+      g.drawRect(x, y, x + this.KEY_WIDTH, y + this.KEY_HEIGHT);
       
       // Draw dynamic label
       g.setColor(0, 0, 0);
       g.setFont("Vector", 28);
-      let label = getLabel(r, c);
-      g.drawString(label, x + (KEY_WIDTH/2) - 10, y + (KEY_HEIGHT/2) - 10);
+      let label = this.getLabel(r, c);
+      g.drawString(label, x + (this.KEY_WIDTH/2) - 10, y + (this.KEY_HEIGHT/2) - 10);
     }
   }
 }
 
 // Handle key press logic
-function handleKeyPress(r, c) {
+handleKeyPress(r, c) {
   let key = baseKeys[r][c];
   
   // Show preview on top half while handling
   if (r>=2)
-    drawPreview(getLabel(r, c), 0);
+    this.drawPreview(this.getLabel(r, c), 0);
   else
-    drawPreview(getLabel(r, c), SCREEN_HEIGHT - 60);    
+    this.drawPreview(this.getLabel(r, c), SCREEN_HEIGHT - 60);    
 }
 
-function handleKeyRelease(r, c) {
+handleKeyRelease(r, c) {
   let key = baseKeys[r][c];
-  print("Executing", key, "input", input);
+  print("Executing", key, "input", this.input);
 
   if (key >= "0" && key <= "9") {
-    input += key;
+    this.input += key;
     // Handle operations if in C mode
-    if (!cpu.execute(input)) {
-      input = "";
-      drawScreen();
+    if (!cpu.execute(this.input)) {
+      this.input = "";
+      this.drawScreen();
       return;
     }
-    drawScreen();
+    this.drawScreen();
     return;
   }
 
   if (key === "ENT") {
-    if (input !== "") {
-      cpu.stack.push(parseFloat(input));
-      input = "";
+    if (this.input !== "") {
+      cpu.stack.push(parseFloat(this.input));
+      this.input = "";
       return;
     }
-    input = "C";
+    this.input = "C";
     return;
   }
 
   if (key === "C") {
     // Backspace during input
-    input = input.slice(0, -1);
+    this.input = this.input.slice(0, -1);
   }
 
   // Refresh display after a short delay
   //setTimeout(() => drawScreen(), 300);
-  drawScreen();
+  this.drawScreen();
 }
-
-// Touch event listener for Bangle.js 2
-Bangle.on('drag', function(xy) {
+  on_drag(xy) {
   let x = xy.x;
   let y = xy.y;
   
-  if (y >= DISPLAY_HEIGHT) {
-    let c = Math.floor(x / KEY_WIDTH);
-    let r = Math.floor((y - DISPLAY_HEIGHT) / KEY_HEIGHT);
+  if (y >= this.DISPLAY_HEIGHT) {
+    let c = Math.floor(x / this.KEY_WIDTH);
+    let r = Math.floor((y - this.DISPLAY_HEIGHT) / this.KEY_HEIGHT);
     if (r >= 0 && r < 4 && c >= 0 && c < 3) {
       if (xy.b)
-        handleKeyPress(r, c);
+        this.handleKeyPress(r, c);
       else
-        handleKeyRelease(r, c);
+        this.handleKeyRelease(r, c);
     }
   }
-});
+  }
+}
+
+let cpu = new CPU();
+let draw_input = new Input();
+
+// Touch event listener for Bangle.js 2
+Bangle.on('drag', (xy) => draw_input.on_drag(xy));
 
 // Initial draw
-drawScreen();
+draw_input.drawScreen();
