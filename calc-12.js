@@ -178,10 +178,8 @@ class Input {
       if (this.input !== "") {
         cpu.stack.push(parseFloat(this.input));
         this.input = "";
-        return;
-      }
-      this.input = "C";
-      return;
+      } else 
+        this.input = "C";
     }
 
     if (key === "C") {
