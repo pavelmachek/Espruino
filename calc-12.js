@@ -13,10 +13,7 @@ Give me implementation for Bangle.js2. Use full screen for keyboard. During inpu
 // RPN Calculator for Bangle.js 2
 // State variables
 let stack = [];
-let currentInput = "";
-let mode = "NORMAL"; // NORMAL, C, C5
-let recording = false;
-let macro = [];
+let input = "";
 
 // Layout definitions
 const SCREEN_WIDTH = g.getWidth();
@@ -36,9 +33,7 @@ const baseKeys = [
 
 function drawPreview(previewText, pos) {
   g.reset().clear();
-
   //drawKeyboard();
-  
   g.setFont("Vector", 60);
   g.drawString(previewText, 10, pos);
 }
@@ -60,8 +55,7 @@ function drawScreen() {
     // Show stack items
     let stackStr = "Stk: " + stack.slice(-3).join(" ");
     g.drawString(stackStr, 5, 5);
-    g.drawString("In: " + currentInput, 5, 30);
-    g.drawString("Mode: " + mode, 5, 55);
+    g.drawString("In: " + input, 5, 30);
   }
   
   // Draw separator line
@@ -74,7 +68,7 @@ function getLabel(r, c) {
   let base = baseKeys[r][c];
   
   // Dynamic label changes based on state
-  if (mode === "C") {
+  if (input && input[0] === "C") {
     if (base === "1") return "1+";
     if (base === "2") return "2-";
     if (base === "3") return "3*";
@@ -161,25 +155,13 @@ function execute(cmd) {
 
 function handleKeyRelease(r, c) {
   let key = baseKeys[r][c];
-  print("Executing", key, "input", currentInput);
+  print("Executing", key, "input", input);
 
   if (key >= "0" && key <= "9") {
-    if (mode === "C5") {
-      // Extended functions e.g., C51 for sin()
-      if (key === "1") { // C51 -> sin()
-        if (stack.length > 0) {
-          let val = stack.pop();
-          stack.push(Math.sin(val));
-        }
-      }
-      mode = "NORMAL";
-      return;
-    }
-    currentInput += key;
+    input += key;
     // Handle operations if in C mode
-    if (!execute(currentInput)) {
-      currentInput = "";
-      mode = "NORMAL";
+    if (!execute(input)) {
+      input = "";
       drawScreen();
       return;
     }
@@ -188,22 +170,18 @@ function handleKeyRelease(r, c) {
   }
 
   if (key === "ENT") {
-    if (currentInput !== "") {
-      stack.push(parseFloat(currentInput));
-      currentInput = "";
+    if (input !== "") {
+      stack.push(parseFloat(input));
+      input = "";
       return;
     }
-    currentInput = "C";
+    input = "C";
     return;
   }
 
   if (key === "C") {
-    if (currentInput === "") {
-      mode = (mode === "C") ? "NORMAL" : "C";
-    } else {
-      // Backspace during input
-      currentInput = currentInput.slice(0, -1);
-    }
+    // Backspace during input
+    input = input.slice(0, -1);
   }
 
   // Refresh display after a short delay
