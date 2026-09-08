@@ -220,5 +220,7 @@ let draw_input = new Input();
 // Touch event listener for Bangle.js 2
 Bangle.on('drag', (xy) => draw_input.on_drag(xy));
 
+Bangle.on('key', (xy) => print(xy));
+
 // Initial draw
 draw_input.drawScreen();
