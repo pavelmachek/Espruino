@@ -84,8 +84,7 @@ class Input {
   }
 
   drawPreview(previewText, pos) {
-    g.reset().clear();
-    //this.drawKeyboard();
+    this.drawKeyboard();
     g.setFont("Vector", 60);
     g.drawString(previewText, 10, pos);
   }
