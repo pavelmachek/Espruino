@@ -180,16 +180,18 @@ class Input {
     let base = this.baseKeys[r][c];
     
     // Dynamic label changes based on state
+    if (this.input && this.input[0] === "C" && this.input[1] === "5") {
+      if (base === "1") return "sin";
+      return base;
+    }    
     if (this.input && this.input[0] === "C") {
       if (base === "1") return "1+";
       if (base === "2") return "2-";
       if (base === "3") return "3*";
       if (base === "4") return "4/";
-      if (base === "5") return "4func";
+      if (base === "5") return "fun";
+      return base;
     }
-    if (this.input && this.input[0] === "C" && this.input[0] === "5") {
-      if (base === "1") return "1sin";
-    }    
     return base;
   }
 
