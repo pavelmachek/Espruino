@@ -257,8 +257,12 @@ class Input {
     }
 
     if (key === "C") {
-      // Backspace during input
-      this.input = this.input.slice(0, -1);
+      if (this.input && this.input[0] == "C") {
+        // Backspace during input
+        this.input = this.input.slice(0, -1);
+      } else {
+        this.input += ".";
+      }
     }
 
     // Refresh display after a short delay
