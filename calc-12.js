@@ -104,16 +104,16 @@ class Input {
     g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
 
     // --- Keyboard Area (Bottom) ---
-    this.drawKeyboard();
+    //this.draw_keyboard();
 
     g.setColor(0, 0, 0);
-    g.setFont("Vector", 16);
+    g.setFont("Vector", 33);
     
     {
       // Show stack items
-      let stackStr = "Stk: " + cpu.stack.slice(-3).join(" ");
+      let stackStr = "" + cpu.stack.slice(-4).join("\n");
       g.drawString(stackStr, 5, 5);
-      g.drawString("In: " + this.input, 5, 30);
+      g.drawString("In: " + this.input, 5, SCREEN_HEIGHT - 40);
     }
     
     // Draw separator line
@@ -134,7 +134,7 @@ class Input {
     return base;
   }
 
-  drawKeyboard() {
+  draw_keyboard() {
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 3; c++) {
         let x = c * this.KEY_WIDTH;
