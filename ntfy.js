@@ -1,62 +1,52 @@
 #!bin/espruino
 eval(require("fs").readFile("sdl.js"));
 
-// v ~/g/tui/bwatch/ je funkcni verse
-
+// in ~/g/tui/bwatch/ there's version that can do post
 // curl -s "ntfy.sh/bangle/json?poll=1&since=latest"
 
-/*
-curl \
-  -H "Title: Unauthorized access detected" \
-  -H "Priority: urgent" \
-  -H "Tags: warning,skull" \
-  -d "Remote access to phils-laptop detected. Act right away." \
-  ntfy.sh/phil_alerts
+let url = "http://ntfy.sh/bangle/json?poll=1&since=latest";
 
-fetch('https://ntfy.sh/phil_alerts', {
-    method: 'POST', // PUT works too
-    body: 'Remote access to phils-laptop detected. Act right away.',
-    headers: {
-        'Title': 'Unauthorized access detected',
-        'Priority': 'urgent',
-        'Tags': 'warning,skull'
-    }
-})
-*/
+function draw(text) {
+  // Clear the screen
+  g.reset().clear();
 
-const http = require("http");
+  // Display Temperature
+  g.setFont("Vector", 36);
+  g.setFontAlign(0, 0); // Center horizontally & vertically
+  g.drawString(text, g.getWidth()/2, 20);
 
-const data = 'Remote access to phils-laptop detected. Act right away.';
+  // Refresh screen (for Bangle.js 2 memory-LCD)
+  g.flip();
+}
 
-const options = {
-  hostname: 'ntfy.sh',
-  path: '/bangle',
-  method: 'POST',
-  headers: {
-    'Title': 'Unauthorized access detected',
-    'Priority': 'urgent',
-    'Tags': 'warning,skull',
-    'Content-Type': 'text/plain',
-    'Content-Length': data.length,
-  },
-};
+function fetch() {
+  g.clear();
+  g.setFont("Vector", 24);
+  g.setFontAlign(0, 0);
+  g.drawString("Loading...", g.getWidth()/2, g.getHeight()/2);
+  g.flip();
 
-const req = http.request(options, (res) => {
-  let responseBody = '';
+  // Use Bangle.http to offload the request via the connected phone
+  Bangle.http(url, { method: "GET" })
+    .then(data => {
+      // Parse the JSON response text
+      let json = JSON.parse(data.resp);
+      
+      draw(json.title + "\n" + json.message);
+    })
+    .catch(err => {
+      console.log("Error fetching weather:", err);
+      g.reset().clear();
+      g.setFont("Vector", 24);
+      g.drawString("Fetch Failed!\nCheck phone\nlink.", 10, g.getHeight()/2);
+      g.flip();
+    });
+}
 
-  res.on('data', (chunk) => {
-    responseBody += chunk;
-  });
+// Run immediately on boot / upload
+fetch();
 
-  res.on('end', () => {
-    console.log('Status:', res.statusCode);
-    console.log('Response:', responseBody);
-  });
-});
+// Optional: Refresh data if the user presses the physical button
+setWatch(fetch, BTN1, { repeat: true, edge: "rising" });
 
-req.on('error', (err) => {
-  console.error('Request error:', err);
-});
 
-req.write(data);
-req.end();
