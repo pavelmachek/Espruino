@@ -173,8 +173,6 @@ class Input {
       // Handle operations if in C mode
       if (!cpu.execute(this.input)) {
         this.input = "";
-        this.drawScreen();
-        return;
       }
       this.drawScreen();
       return;
