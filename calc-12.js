@@ -91,12 +91,12 @@ class Input {
     g.drawString(t, 10, y);
   }
 
-  drawPreview(t, pos) {
-    this.drawScreen();
+  draw_preview(t, pos) {
+    this.draw_screen();
     this.draw_over(t, 10, pos, 60);
   }
 
-  drawScreen() {
+  draw_screen() {
     g.reset().clear();
     
     // --- Display Area (Top) ---
@@ -121,7 +121,7 @@ class Input {
     g.drawLine(0, this.DISPLAY_HEIGHT, SCREEN_WIDTH, this.DISPLAY_HEIGHT);  
   }
 
-  getLabel(r, c) {
+  get_label(r, c) {
     let base = this.baseKeys[r][c];
     
     // Dynamic label changes based on state
@@ -147,7 +147,7 @@ class Input {
         // Draw dynamic label
         g.setColor(0, 0, 0);
         g.setFont("Vector", 28);
-        let label = this.getLabel(r, c);
+        let label = this.get_label(r, c);
         g.drawString(label, x + (this.KEY_WIDTH/2) - 10, y + (this.KEY_HEIGHT/2) - 10);
       }
     }
@@ -159,9 +159,9 @@ class Input {
     
     // Show preview on top half while handling
     if (r>=2)
-      this.drawPreview(this.getLabel(r, c), 0);
+      this.draw_preview(this.get_label(r, c), 0);
     else
-      this.drawPreview(this.getLabel(r, c), SCREEN_HEIGHT - 60);    
+      this.draw_preview(this.get_label(r, c), SCREEN_HEIGHT - 60);    
   }
 
   handleKeyRelease(r, c) {
@@ -174,7 +174,7 @@ class Input {
       if (!cpu.execute(this.input)) {
         this.input = "";
       }
-      this.drawScreen();
+      this.draw_screen();
       return;
     }
 
@@ -192,8 +192,8 @@ class Input {
     }
 
     // Refresh display after a short delay
-    //setTimeout(() => drawScreen(), 300);
-    this.drawScreen();
+    //setTimeout(() => draw_screen(), 300);
+    this.draw_screen();
   }
   on_drag(xy) {
     let x = xy.x;
@@ -242,4 +242,4 @@ Bangle.on('drag', (xy) => draw_input.on_drag(xy));
 Bangle.on('key', (xy) => draw_input.on_key(xy));
 
 // Initial draw
-draw_input.drawScreen();
+draw_input.draw_screen();
