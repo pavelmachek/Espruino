@@ -14,6 +14,52 @@ Give me implementation for Bangle.js2. Use full screen for keyboard. During inpu
 const SCREEN_WIDTH = g.getWidth();
 const SCREEN_HEIGHT = g.getHeight();
 
+class LineStore {
+  constructor() {
+    this.lines = [];    // sorted numeric lines
+    this.values = [];   // same index as lines
+  }
+
+  set(line, value) {
+    const i = this._findIndex(line);
+    if (i.found) {
+      this.values[i.index] = value;
+    } else {
+      this.lines.splice(i.index, 0, line);
+      this.values.splice(i.index, 0, value);
+    }
+  }
+
+  get(line) {
+    const i = this._findIndex(line);
+    return i.found ? this.values[i.index] : undefined;
+  }
+
+  // smallest stored line > n
+  next_line(n) {
+    const i = this._lowerBound(n + 1);
+    return i < this.lines.length ? this.lines[i] : null;
+  }
+
+  _findIndex(line) {
+    const i = this._lowerBound(line);
+    return {
+      index: i,
+      found: i < this.lines.length && this.lines[i] === line,
+    };
+  }
+
+  _lowerBound(target) {
+    let lo = 0, hi = this.lines.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (this.lines[mid] < target) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+}
+
 class CPU {
   constructor() {
     this.stack = [];
@@ -139,7 +185,11 @@ class Input {
       if (base === "2") return "2-";
       if (base === "3") return "3*";
       if (base === "4") return "4/";
+      if (base === "5") return "4func";
     }
+    if (this.input && this.input[0] === "C" && this.input[0] === "5") {
+      if (base === "1") return "1sin";
+    }    
     return base;
   }
 
