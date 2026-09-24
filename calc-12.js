@@ -79,7 +79,7 @@ class Input {
       ["7", "8", "9"],
       ["4", "5", "6"],
       ["1", "2", "3"],
-      ["C", "0", "E"]
+      ["0", "C", "E"]
     ];
   }
 
@@ -212,6 +212,27 @@ class Input {
       }
     }
   }
+  on_key(v) {
+    print("key down", v);
+    switch (v) {
+    case 79: this.handleKeyRelease(0, 0); break;
+    case 80: this.handleKeyRelease(0, 1); break;
+    case 81: this.handleKeyRelease(0, 2); break;
+      
+    case 83: this.handleKeyRelease(1, 0); break;
+    case 84: this.handleKeyRelease(1, 1); break;
+    case 85: this.handleKeyRelease(1, 2); break;
+      
+    case 87: this.handleKeyRelease(2, 0); break;
+    case 88: this.handleKeyRelease(2, 1); break;
+    case 89: this.handleKeyRelease(2, 2); break;
+
+    case 90: this.handleKeyRelease(3, 0); break;
+    case 91: this.handleKeyRelease(3, 1); break;
+    case 104: this.handleKeyRelease(3, 2); break;
+    }
+    
+  }
 }
 
 let cpu = new CPU();
@@ -220,7 +241,7 @@ let draw_input = new Input();
 // Touch event listener for Bangle.js 2
 Bangle.on('drag', (xy) => draw_input.on_drag(xy));
 
-Bangle.on('key', (xy) => print(xy));
+Bangle.on('key', (xy) => draw_input.on_key(xy));
 
 // Initial draw
 draw_input.drawScreen();

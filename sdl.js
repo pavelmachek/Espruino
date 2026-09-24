@@ -160,8 +160,7 @@ if (use_sdl) {
   initDirect();
 }
 
-function backdoor(x, y) { //return peek8(x);
-}
+function backdoor(x, y) { return peek8(x); }
 //function backdoor(x, y) { return g.getPixel(x, 0); }
 
 function sdl_drag(is_down) {
@@ -179,10 +178,6 @@ function sdl_drag(is_down) {
 var sdl_is_down = false;
 
 function sdl_key(key) {
-  switch(key) {
-  case 65:
-    break;
-  }
   let d = bangle_on_map['key'];
   if (d) {
     d(key);
@@ -484,6 +479,6 @@ function emulate_gps() {
 
 
 print("Test being loaded");
-setInterval(sdl_poll, 100);
+setInterval(sdl_poll, 10);
 
 // --- end glue
