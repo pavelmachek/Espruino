@@ -104,16 +104,25 @@ class Input {
     g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
 
     // --- Keyboard Area (Bottom) ---
-    //this.draw_keyboard();
+    if (this.input != "")
+      this.draw_keyboard();
+    this.draw_boxes();
 
     g.setColor(0, 0, 0);
     g.setFont("Vector", 33);
     
     {
       // Show stack items
-      let stackStr = "" + cpu.stack.slice(-4).join("\n");
-      g.drawString(stackStr, 5, 5);
-      g.drawString("In: " + this.input, 5, SCREEN_HEIGHT - 40);
+      if (this.input == "") {
+        let stackStr = "" + cpu.stack.slice(-4).join("\n");
+        g.drawString(stackStr, 5, 5);
+      }
+      if (this.input != "") {
+        g.setColor(1, 1, 1);
+        g.fillRect(0, SCREEN_HEIGHT - 40, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g.setColor(0, 0, 0);
+        g.drawString("In: " + this.input, 5, SCREEN_HEIGHT - 40);
+      }
     }
     
     // Draw separator line
@@ -134,7 +143,7 @@ class Input {
     return base;
   }
 
-  draw_keyboard() {
+  draw_boxes() {
     for (let r = 0; r < 4; r++) {
       for (let c = 0; c < 3; c++) {
         let x = c * this.KEY_WIDTH;
@@ -143,6 +152,15 @@ class Input {
         // Draw key box
         g.setColor(0.2, 0.2, 0.2);
         g.drawRect(x, y, x + this.KEY_WIDTH, y + this.KEY_HEIGHT);
+      }
+    }
+  }
+
+  draw_keyboard() {
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 3; c++) {
+        let x = c * this.KEY_WIDTH;
+        let y = this.DISPLAY_HEIGHT + (r * this.KEY_HEIGHT);
         
         // Draw dynamic label
         g.setColor(0, 0, 0);
