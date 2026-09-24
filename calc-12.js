@@ -261,7 +261,10 @@ class Input {
         // Backspace during input
         this.input = this.input.slice(0, -1);
       } else {
-        this.input += ".";
+        if (!this.input.includes("."))
+          this.input += ".";
+        else
+          this.input = this.input.slice(0, -2);
       }
     }
 
