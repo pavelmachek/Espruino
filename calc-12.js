@@ -65,6 +65,19 @@ class CPU {
     this.stack = [];
   }
 
+  run_subproc(store, line) {
+    while(1) {
+      print("subproc: ", line);
+      cmd = store.get(line);
+      print("cmd: ", cmd);
+
+      print("subproc: ", line);
+      line = store.next_line(line);
+      if (line === null)
+        return;
+    }
+  }
+
   execute(cmd) {
     print("Execute?", cmd);
     if (!cmd)
@@ -78,6 +91,11 @@ class CPU {
     if (cmd === "C51") {
       let a = this.stack.pop();
       this.stack.push(Math.sin(a));
+      return 0;
+    }
+    if (cmd === "C97") {
+      let a = this.stack.pop();
+      this.run_subproc(this.store, a);
       return 0;
     }
     if (this.stack.length < 2) {
@@ -180,6 +198,11 @@ class Input {
     let base = this.baseKeys[r][c];
     
     // Dynamic label changes based on state
+    if (this.input && this.input[0] === "C" && this.input[1] === "9") {
+      if (base === "7") return "go";
+      if (base === "8") return "rtn";
+      return base;
+    }    
     if (this.input && this.input[0] === "C" && this.input[1] === "5") {
       if (base === "1") return "sin";
       return base;
@@ -190,6 +213,7 @@ class Input {
       if (base === "3") return "3*";
       if (base === "4") return "4/";
       if (base === "5") return "fun";
+      if (base === "9") return "pgm";
       return base;
     }
     return base;
@@ -312,10 +336,17 @@ class Input {
 
 let cpu = new CPU();
 let draw_input = new Input();
+let store = new LineStore();
+cpu.store = store;
+
+store.set(10, "1");
+store.set(20, "C1");
+store.set(30, "C98");
+
+cpu.run_subproc(store, 10);
 
 // Touch event listener for Bangle.js 2
 Bangle.on('drag', (xy) => draw_input.on_drag(xy));
-
 Bangle.on('key', (xy) => draw_input.on_key(xy));
 
 // Initial draw
