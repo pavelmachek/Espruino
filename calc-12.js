@@ -70,6 +70,13 @@ class CPU {
       print("subproc: ", line);
       cmd = store.get(line);
       print("cmd: ", cmd);
+      if (cmd == "C98")
+        return;
+      if (this.execute(cmd)) {
+        print("Error executing");
+        return;
+      }
+    
 
       print("subproc: ", line);
       line = store.next_line(line);
@@ -82,6 +89,10 @@ class CPU {
     print("Execute?", cmd);
     if (!cmd)
       return -3;
+    if (cmd[0] >= "0" && cmd[0] <= "9") {
+      this.stack.push(parseFloat(cmd));
+      return 0;
+    }
     if (cmd[0] != "C")
       return -3;
     if (this.stack.length < 1) {
@@ -265,7 +276,7 @@ class Input {
     if (key >= "0" && key <= "9") {
       this.input += key;
       // Handle operations if in C mode
-      if (!cpu.execute(this.input)) {
+      if (this.input[0] == "C" && !cpu.execute(this.input)) {
         this.input = "";
       }
       this.draw_screen();
@@ -274,7 +285,7 @@ class Input {
 
     if (key === "E") {
       if (this.input !== "") {
-        cpu.stack.push(parseFloat(this.input));
+        cpu.execute(this.input)
         this.input = "";
       } else 
         this.input = "C";
