@@ -63,6 +63,8 @@ class LineStore {
 class CPU {
   constructor() {
     this.stack = [];
+    this.mode = "norm";
+    this.pgm_line = 10;
   }
 
   run_subproc(store, line) {
@@ -76,7 +78,6 @@ class CPU {
         print("Error executing");
         return;
       }
-    
 
       print("subproc: ", line);
       line = store.next_line(line);
@@ -85,8 +86,25 @@ class CPU {
     }
   }
 
+  pgm_store(cmd) {
+    if ((cmd[0] >= "0" && cmd[0] <= "9") || (cmd === "C97") || (cmd === "C1") || (cmd === "C2"))  {
+      this.store.set(this.pgm_line, cmd);
+      print(this.store.lines)
+      this.pgm_line += 10;
+      return 0;
+    }    
+    return -1;
+  }
+  
   execute(cmd) {
     print("Execute?", cmd);
+    if (cmd === "C95") {
+      this.mode = "norm";
+      return 0;
+    }
+    if (this.mode == "pgm") {
+      return this.pgm_store(cmd);
+    }
     if (!cmd)
       return -3;
     if (cmd[0] >= "0" && cmd[0] <= "9") {
@@ -104,11 +122,18 @@ class CPU {
       this.stack.push(Math.sin(a));
       return 0;
     }
-    if (cmd === "C97") {
+    if (cmd === "C97") { /* gosub */
       let a = this.stack.pop();
       this.run_subproc(this.store, a);
       return 0;
     }
+    if (cmd === "C96") { /* program */
+      let a = this.stack.pop();
+      this.pgm_line = a;
+      this.mode = "pgm";
+      return 0;
+    }
+    
     if (this.stack.length < 2) {
       print("Not enough stack");
       return -1;
@@ -210,6 +235,9 @@ class Input {
     
     // Dynamic label changes based on state
     if (this.input && this.input[0] === "C" && this.input[1] === "9") {
+      if (base === "5") return "don";
+      if (base === "6") return "pgm";
+      
       if (base === "7") return "go";
       if (base === "8") return "rtn";
       return base;
@@ -346,19 +374,22 @@ class Input {
 }
 
 let cpu = new CPU();
-let draw_input = new Input();
+let input = new Input();
 let store = new LineStore();
 cpu.store = store;
+cpu.input = input;
 
+if (0) {
 store.set(10, "1");
 store.set(20, "C1");
 store.set(30, "C98");
 
-cpu.run_subproc(store, 10);
+  cpu.run_subproc(store, 10);
+}
 
 // Touch event listener for Bangle.js 2
-Bangle.on('drag', (xy) => draw_input.on_drag(xy));
-Bangle.on('key', (xy) => draw_input.on_key(xy));
+Bangle.on('drag', (xy) => input.on_drag(xy));
+Bangle.on('key', (xy) => input.on_key(xy));
 
 // Initial draw
-draw_input.draw_screen();
+input.draw_screen();
