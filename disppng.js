@@ -364,7 +364,7 @@ class PNG {
     return out;
   }
 
-  draw(x, y) {
+  draw(x, y, sc) {
     const pixels = this.decode();
     let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
@@ -378,7 +378,7 @@ class PNG {
         else
           g.setColor(1,1,1);
         }
-        g.fillRect(x + xx, y + yy, x + xx, y + yy);
+        g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
         i++;
       }
     }
@@ -393,7 +393,7 @@ function test() {
   const a = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
   const png = new PNG(a.buffer);
-  png.draw(0, 0);
+  png.draw(0, 0, 4);
 }
 
 test();
