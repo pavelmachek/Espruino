@@ -4,8 +4,11 @@
 
   Bangle.js2, give me code to read png file and display it on the screen. Note that a) you only have 8 colors, b) you can't use any libraries; do decoding by hand. Assume small files, and it is okay if debugging takes a while. Use classes to group code where it makes sense.
   
+  Hmm. 25 seconds for 48x12 picture.
  */
 
+var pc = 1;
+if (pc)
 eval(require("fs").readFile("sdl.js"));
 
 
@@ -79,66 +82,7 @@ class Huffman {
   }
 }
 
-class PNG {
-  constructor(arrayBuffer) {
-    this.u8 = new Uint8Array(arrayBuffer);
-    this.pos = 0;
-    this.width = 0;
-    this.height = 0;
-    this.bitDepth = 0;
-    this.colorType = 0;
-    this.palette = [];
-    this.idat = [];
-    this.parse();
-  }
-
-  readU8() { return this.u8[this.pos++]; }
-  readU32BE() { return ((this.readU8()<<24) | (this.readU8()<<16) | (this.readU8()<<8) | this.readU8()) >>> 0; }
-  readBytes(n) { const b = this.u8.subarray(this.pos, this.pos+n); this.pos += n; return b; }
-  readString(n) { let s=""; for (let i=0;i<n;i++) s += String.fromCharCode(this.readU8()); return s; }
-
-  parse() {
-    const sig = [137,80,78,71,13,10,26,10];
-    for (let i = 0; i < sig.length; i++) if (this.readU8() !== sig[i]) throw new Error("Not PNG");
-
-    while (this.pos < this.u8.length) {
-      const len = this.readU32BE();
-      const type = this.readString(4);
-      const data = this.readBytes(len);
-      this.readU32BE();
-      print("Have type", type);
-      if (type === "IHDR") this.parseIHDR(data);
-      else if (type === "PLTE") this.parsePLTE(data);
-      else if (type === "IDAT") this.idat.push(data);
-      else if (type === "IEND") break;
-    }
-  }
-
-  parseIHDR(d) {
-    this.width = (d[0]<<24)|(d[1]<<16)|(d[2]<<8)|d[3];
-    this.height = (d[4]<<24)|(d[5]<<16)|(d[6]<<8)|d[7];
-    this.bitDepth = d[8];
-    this.colorType = d[9];
-    this.compression = d[10];
-    this.filter = d[11];
-    this.interlace = d[12];
-    print("Have header:", this.width, "x", this.height, "depth", this.bitDepth);
-  }
-
-  parsePLTE(d) {
-    this.palette = [];
-    for (let i = 0; i < d.length; i += 3) this.palette.push([d[i], d[i+1], d[i+2]]);
-  }
-
-  concatIDAT() {
-    let total = 0;
-    for (let i = 0; i < this.idat.length; i++) total += this.idat[i].length;
-    let out = new Uint8Array(total);
-    let p = 0;
-    for (let i = 0; i < this.idat.length; i++) { out.set(this.idat[i], p); p += this.idat[i].length; }
-    return out;
-  }
-
+class Inflate {
   static inflate(zbytes) {
     const br = new BitReader(zbytes, 2); // skip zlib header
     let out = [];
@@ -157,7 +101,7 @@ class PNG {
         if (((len ^ 0xFFFF) & 0xFFFF) !== nlen) throw new Error("Stored block length mismatch");
         for (let i = 0; i < len; i++) out.push(zbytes[br.pos++]);
       } else if (btype === 1 || btype === 2) {
-        const v = PNG.buildHuffmanTables(btype, br, zbytes);
+        const v = Inflate.buildHuffmanTables(btype, br, zbytes);
         const litLen = v.litLen;
         const dist = v.dist;
         while (true) {
@@ -167,12 +111,12 @@ class PNG {
           } else if (sym === 256) {
             break;
           } else if (sym > 256 && sym < 286) {
-            const lenInfo = PNG.lengthFromSymbol(sym);
+            const lenInfo = Inflate.lengthFromSymbol(sym);
             const extraLen = lenInfo.extra ? br.readBits(lenInfo.extra) : 0;
             const length = lenInfo.base + extraLen;
 
             const distSym = dist.decode(br);
-            const distInfo = PNG.distanceFromSymbol(distSym);
+            const distInfo = Inflate.distanceFromSymbol(distSym);
             const extraDist = distInfo.extra ? br.readBits(distInfo.extra) : 0;
             const distance = distInfo.base + extraDist;
 
@@ -271,6 +215,69 @@ class PNG {
     if (!e) throw new Error("Bad distance symbol");
     return { base: e[1], extra: e[2] };
   }
+}
+
+class PNG {
+  constructor(arrayBuffer) {
+    this.u8 = new Uint8Array(arrayBuffer);
+    this.pos = 0;
+    this.width = 0;
+    this.height = 0;
+    this.bitDepth = 0;
+    this.colorType = 0;
+    this.palette = [];
+    this.idat = [];
+    this.parse();
+  }
+
+  readU8() { return this.u8[this.pos++]; }
+  readU32BE() { return ((this.readU8()<<24) | (this.readU8()<<16) | (this.readU8()<<8) | this.readU8()) >>> 0; }
+  readBytes(n) { const b = this.u8.subarray(this.pos, this.pos+n); this.pos += n; return b; }
+  readString(n) { let s=""; for (let i=0;i<n;i++) s += String.fromCharCode(this.readU8()); return s; }
+
+  parse() {
+    const sig = [137,80,78,71,13,10,26,10];
+    for (let i = 0; i < sig.length; i++) if (this.readU8() !== sig[i]) throw new Error("Not PNG");
+
+    while (this.pos < this.u8.length) {
+      const len = this.readU32BE();
+      const type = this.readString(4);
+      const data = this.readBytes(len);
+      this.readU32BE();
+      //print("Have type", type);
+      if (type === "IHDR") this.parseIHDR(data);
+      else if (type === "PLTE") this.parsePLTE(data);
+      else if (type === "IDAT") this.idat.push(data);
+      else if (type === "IEND") break;
+    }
+  }
+
+  parseIHDR(d) {
+    this.width = (d[0]<<24)|(d[1]<<16)|(d[2]<<8)|d[3];
+    this.height = (d[4]<<24)|(d[5]<<16)|(d[6]<<8)|d[7];
+    this.bitDepth = d[8];
+    this.colorType = d[9];
+    this.compression = d[10];
+    this.filter = d[11];
+    this.interlace = d[12];
+    print("Have header:", this.width, "x", this.height, "depth", this.bitDepth);
+    this.height = this.height;
+  }
+
+  parsePLTE(d) {
+    this.palette = [];
+    for (let i = 0; i < d.length; i += 3) this.palette.push([d[i], d[i+1], d[i+2]]);
+  }
+
+  concatIDAT() {
+    let total = 0;
+    for (let i = 0; i < this.idat.length; i++) total += this.idat[i].length;
+    let out = new Uint8Array(total);
+    let p = 0;
+    for (let i = 0; i < this.idat.length; i++) { out.set(this.idat[i], p); p += this.idat[i].length; }
+    return out;
+  }
+
 
   paeth(a,b,c) {
     const p = a + b - c;
@@ -322,7 +329,8 @@ class PNG {
 
   decode() {
     const z = this.concatIDAT();
-    const raw = PNG.inflate(z);
+          print("Inflate");
+    const raw = Inflate.inflate(z);
 
     let bpp;
     if (this.colorType === 3) bpp = 1;
@@ -337,11 +345,12 @@ class PNG {
     //const px = this.unfilter(raw, bpp);
     const out = [];
 
+    print("Color convert");
     if (1) {
-      let i = 0
+      let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
       for (let xx = 0; xx < this.width; xx++) {
-        
+        // FIXME: we should work with nibbles, not take every second like this
         const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
         out.push(this.toBangleColor(c[0], c[1], c[2]));
         i++;
@@ -366,10 +375,11 @@ class PNG {
 
   draw(x, y, sc) {
     const pixels = this.decode();
+      print("Draw");
     let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
       for (let xx = 0; xx < this.width; xx++) {
-        print("Pixel: ", pixels[i]);
+        //print("Pixel: ", pixels[i]);
         if (1)
           g.setColor(pixels[i][0], pixels[i][1], pixels[i][2]);
         else {
@@ -384,17 +394,60 @@ class PNG {
     }
     g.flip();
   }
+  
+  decode_draw(x, y, sc) {
+    const z = this.concatIDAT();
+          print("Inflate");
+    const raw = Inflate.inflate(z);
+
+    let bpp;
+    if (this.colorType === 3) bpp = 1;
+    else if (this.colorType === 2) bpp = 3;
+    else throw new Error("Only indexed or truecolor PNG supported");
+
+    print("colortype", this.colorType);
+    print("Palette:", this.palette);
+    print("Raw:", raw.length);
+
+    px = raw;
+    //const px = this.unfilter(raw, bpp);
+    const out = [];
+
+    print("Color convert");
+    if (1) {
+      let i = 0;
+    for (let yy = 0; yy < this.height; yy++) {
+      for (let xx = 0; xx < this.width; xx++) {
+        // FIXME: we should work with nibbles, not take every second like this
+        const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
+        let color = this.toBangleColor(c[0], c[1], c[2]);
+        
+          g.setColor(color[0], color[1], color[2]);
+        g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
+        i++;
+      }
+      i+=2;
+      }
+    }
+  }
 }
 
 function test() {
 // Usage:
-  // const s = require("Storage").read("pic.png");
-  const s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
+  print("Read");
+  let s;
+  if (!pc)
+     s = require("Storage").read("delme.png");
+  else
+    s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
+  print("data: ", s);
   const a = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
+  print("De-png");
   const png = new PNG(a.buffer);
-  png.draw(0, 0, 4);
+  //png.draw(0, 0, 4);
+  png.decode_draw(0, 0, 4);
 }
 
-test();
+setTimeout(test, 1000);
 
