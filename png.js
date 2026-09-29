@@ -90,6 +90,7 @@ class Inflate {
     while (!final) {
       final = br.readBits(1);
       const btype = br.readBits(2);
+      print("Inflate", br.pos, zbytes.length);
 
       if (btype === 0) {
         br.alignByte();
@@ -408,13 +409,13 @@ class PNG {
 }
 
 function test() {
-// Usage:
+  let t1=getTime();
   print("Read");
   let s;
   if (!pc)
      s = require("Storage").read("delme.png");
   else {
-    if (0)
+    if (1)
       s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
     else if (0)
       s = require("fs").readFile("/usr/share/eom/icons/hicolor/48x48/actions/slideshow-play.png");
@@ -426,7 +427,7 @@ function test() {
   print("De-png");
   png = new PNG(a.buffer);
   png.draw(g, 0, 0, 1);
-  print("Done")
+  print("Done", getTime()-t1)
 }
 
 setTimeout(test, 1000);
