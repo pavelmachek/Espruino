@@ -317,7 +317,7 @@ class PNG {
       const d = dr*dr + dg*dg + db*db;
       if (d < bestD) { bestD = d; best = i; }
     }
-    return best;
+    return p[best];
   }
 
   decode() {
@@ -369,11 +369,15 @@ class PNG {
     let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
       for (let xx = 0; xx < this.width; xx++) {
-        //g.setColor(pixels[i++]);
+        print("Pixel: ", pixels[i]);
+        if (1)
+          g.setColor(pixels[i][0], pixels[i][1], pixels[i][2]);
+        else {
         if (pixels[i])
           g.setColor(0,0,0);
         else
           g.setColor(1,1,1);
+        }
         g.fillRect(x + xx, y + yy, x + xx, y + yy);
         i++;
       }
