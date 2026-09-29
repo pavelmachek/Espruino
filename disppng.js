@@ -346,6 +346,7 @@ class PNG {
         out.push(this.toBangleColor(c[0], c[1], c[2]));
         i++;
       }
+      i+=2;
       }
       return out;
     }
