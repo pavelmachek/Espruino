@@ -400,7 +400,7 @@ class PNG {
           g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
           i++;
         }
-        i+=2;
+        i+=1;
       }
       return;
     }
@@ -414,7 +414,7 @@ function test() {
   if (!pc)
      s = require("Storage").read("delme.png");
   else {
-    if (1)
+    if (0)
       s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
     else if (0)
       s = require("fs").readFile("/usr/share/eom/icons/hicolor/48x48/actions/slideshow-play.png");
