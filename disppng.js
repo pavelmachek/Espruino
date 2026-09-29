@@ -9,8 +9,7 @@
 
 var pc = 1;
 if (pc)
-eval(require("fs").readFile("sdl.js"));
-
+  eval(require("fs").readFile("sdl.js"));
 
 class BitReader {
   constructor(u8, pos) {
@@ -278,7 +277,6 @@ class PNG {
     return out;
   }
 
-
   paeth(a,b,c) {
     const p = a + b - c;
     const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
@@ -327,7 +325,7 @@ class PNG {
     return p[best];
   }
 
-  decode() {
+  draw(g, x, y, sc) {
     const z = this.concatIDAT();
           print("Inflate");
     const raw = Inflate.inflate(z);
@@ -346,74 +344,8 @@ class PNG {
     const out = [];
 
     print("Color convert");
-    if (1) {
-      let i = 0;
-    for (let yy = 0; yy < this.height; yy++) {
-      for (let xx = 0; xx < this.width; xx++) {
-        // FIXME: we should work with nibbles, not take every second like this
-        const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
-        out.push(this.toBangleColor(c[0], c[1], c[2]));
-        i++;
-      }
-      i+=2;
-      }
-      return out;
-    }
 
-    if (this.colorType === 3) {
-      for (let i = 0; i < px.length; i++) {
-        const c = this.palette[px[i]] || [0, 0, 0];
-        out.push(this.toBangleColor(c[0], c[1], c[2]));
-      }
-    } else {
-      for (let i = 0; i < px.length; i += 3) {
-        out.push(this.toBangleColor(px[i], px[i+1], px[i+2]));
-      }
-    }
-    return out;
-  }
-
-  draw(x, y, sc) {
-    const pixels = this.decode();
-      print("Draw");
-    let i = 0;
-    for (let yy = 0; yy < this.height; yy++) {
-      for (let xx = 0; xx < this.width; xx++) {
-        //print("Pixel: ", pixels[i]);
-        if (1)
-          g.setColor(pixels[i][0], pixels[i][1], pixels[i][2]);
-        else {
-        if (pixels[i])
-          g.setColor(0,0,0);
-        else
-          g.setColor(1,1,1);
-        }
-        g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
-        i++;
-      }
-    }
-    g.flip();
-  }
-  
-  decode_draw(x, y, sc) {
-    const z = this.concatIDAT();
-          print("Inflate");
-    const raw = Inflate.inflate(z);
-
-    let bpp;
-    if (this.colorType === 3) bpp = 1;
-    else if (this.colorType === 2) bpp = 3;
-    else throw new Error("Only indexed or truecolor PNG supported");
-
-    print("colortype", this.colorType);
-    print("Palette:", this.palette);
-    print("Raw:", raw.length);
-
-    px = raw;
-    //const px = this.unfilter(raw, bpp);
-    const out = [];
-
-    print("Color convert");
+    /* FIXME */
     if (1) {
       let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
@@ -429,6 +361,19 @@ class PNG {
       i+=2;
       }
     }
+    
+    if (this.colorType === 3) {
+      for (let i = 0; i < px.length; i++) {
+        const c = this.palette[px[i]] || [0, 0, 0];
+        out.push(this.toBangleColor(c[0], c[1], c[2]));
+      }
+    } else {
+      for (let i = 0; i < px.length; i += 3) {
+        out.push(this.toBangleColor(px[i], px[i+1], px[i+2]));
+      }
+    }
+    return out;
+
   }
 }
 
@@ -440,13 +385,11 @@ function test() {
      s = require("Storage").read("delme.png");
   else
     s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
-  print("data: ", s);
   const a = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
   print("De-png");
   const png = new PNG(a.buffer);
-  //png.draw(0, 0, 4);
-  png.decode_draw(0, 0, 4);
+  png.draw(g, 0, 0, 4);
 }
 
 setTimeout(test, 1000);
