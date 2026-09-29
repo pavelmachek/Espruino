@@ -317,9 +317,9 @@ class PNG {
       [0,0,255],[255,255,0],[0,255,255],[255,0,255]
     ];
     let ret = [0,0,0];
-    ret[0] = r;
-    ret[1] = g;
-    ret[2] = b;
+    ret[0] = r / 256;
+    ret[1] = g / 256;
+    ret[2] = b / 256;
     return ret;
     let best = 0, bestD = 1e9;
     for (let i = 0; i < p.length; i++) {
@@ -353,7 +353,7 @@ class PNG {
     print("Color convert");
 
     // FIXME: for 4-bit indexed
-    if (0 && this.colorType === 3) {
+    if (this.bitDepth == 4 && this.colorType === 3) {
       let i = 0;
       for (let yy = 0; yy < this.height; yy++) {
         for (let xx = 0; xx < this.width; xx++) {
@@ -389,7 +389,7 @@ class PNG {
       return;
     }
 
-    if (this.colorType === 3) {
+    if (this.bitDepth == 8 && this.colorType === 3) {
       let i = 0;
       for (let yy = 0; yy < this.height; yy++) {
         for (let xx = 0; xx < this.width; xx++) {
@@ -414,7 +414,7 @@ function test() {
   if (!pc)
      s = require("Storage").read("delme.png");
   else {
-    if (0)
+    if (1)
       s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
     else if (0)
       s = require("fs").readFile("/usr/share/eom/icons/hicolor/48x48/actions/slideshow-play.png");
@@ -424,7 +424,7 @@ function test() {
   const a = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
   print("De-png");
-  const png = new PNG(a.buffer);
+  png = new PNG(a.buffer);
   png.draw(g, 0, 0, 1);
   print("Done")
 }
