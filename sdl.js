@@ -44,7 +44,7 @@ function initWindow(x, y) {
   g = Graphics.createSDL(x, y, 16);
   g.setColor(1,1,1);
   g.fillRect(0, 0, x, y);
-  g.flip = print;
+  g.flip = function () { print("g.flip() not implemented"); };
 
   /*
   g.theme = {}
@@ -127,9 +127,9 @@ function BangleHttp(url) {
 }
 
 Bangle = {};
-Bangle.setGPSPower = print;
-Bangle.loadWidgets = print;
-Bangle.drawWidgets = print;
+Bangle.setGPSPower = function () { print("setGPSpower) not implemented"); };
+Bangle.loadWidgets = function () { };
+Bangle.drawWidgets = function () { };
 Bangle.setUI =  bangle_setUI;
 Bangle.project = bangle_project;
 Bangle.isCharging = function () { return false; }
