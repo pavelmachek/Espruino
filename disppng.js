@@ -316,6 +316,11 @@ class PNG {
       [0,0,0],[255,255,255],[255,0,0],[0,255,0],
       [0,0,255],[255,255,0],[0,255,255],[255,0,255]
     ];
+    let ret = [0,0,0];
+    ret[0] = r;
+    ret[1] = g;
+    ret[2] = b;
+    return ret;
     let best = 0, bestD = 1e9;
     for (let i = 0; i < p.length; i++) {
       const dr = r - p[i][0], dg = g - p[i][1], db = b - p[i][2];
@@ -330,13 +335,15 @@ class PNG {
           print("Inflate");
     const raw = Inflate.inflate(z);
 
+    print("colortype", this.colorType);
+    
     let bpp;
     if (this.colorType === 3) bpp = 1;
     else if (this.colorType === 2) bpp = 3;
+    else if (this.colorType === 6) bpp = 4;
     else throw new Error("Only indexed or truecolor PNG supported");
 
-    print("colortype", this.colorType);
-    print("Palette:", this.palette);
+//    print("Palette:", this.palette);
     print("Raw:", raw.length);
 
     px = raw;
@@ -345,35 +352,58 @@ class PNG {
 
     print("Color convert");
 
-    /* FIXME */
-    if (1) {
+    // FIXME: for 4-bit indexed
+    if (0 && this.colorType === 3) {
       let i = 0;
-    for (let yy = 0; yy < this.height; yy++) {
-      for (let xx = 0; xx < this.width; xx++) {
-        // FIXME: we should work with nibbles, not take every second like this
-        const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
-        let color = this.toBangleColor(c[0], c[1], c[2]);
-        
+      for (let yy = 0; yy < this.height; yy++) {
+        for (let xx = 0; xx < this.width; xx++) {
+          // FIXME: we should work with nibbles, not take every second like this
+          const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
+          let color = this.toBangleColor(c[0], c[1], c[2]);
+          
           g.setColor(color[0], color[1], color[2]);
-        g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
-        i++;
+          g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
+          i++;
+        }
+        i+=2;
       }
-      i+=2;
-      }
+      return;
     }
-    
-    if (this.colorType === 3) {
-      for (let i = 0; i < px.length; i++) {
-        const c = this.palette[px[i]] || [0, 0, 0];
-        out.push(this.toBangleColor(c[0], c[1], c[2]));
-      }
-    } else {
-      for (let i = 0; i < px.length; i += 3) {
-        out.push(this.toBangleColor(px[i], px[i+1], px[i+2]));
-      }
-    }
-    return out;
 
+    if (this.colorType === 2) {
+      throw new Error("RGB should be similar to RGBA");
+    }
+      
+    if (this.colorType === 6) {
+      let i = 0;
+      for (let yy = 0; yy < this.height; yy++) {
+        for (let xx = 0; xx < this.width; xx++) {
+          let color = this.toBangleColor(px[i], px[i+1], px[i+2]);
+          g.setColor(color[0], color[1], color[2]);
+
+          g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
+          i+=4;
+        }
+        i+=2;
+      }
+      return;
+    }
+
+    if (this.colorType === 3) {
+      let i = 0;
+      for (let yy = 0; yy < this.height; yy++) {
+        for (let xx = 0; xx < this.width; xx++) {
+          const c = this.palette[px[i]] || [0, 0, 0];
+          let color = this.toBangleColor(c[0], c[1], c[2]);
+          
+          g.setColor(color[0], color[1], color[2]);
+          g.fillRect(x + xx*sc, y + yy*sc, x + xx*sc + sc-1, y + yy*sc + sc-1);
+          i++;
+        }
+        i+=2;
+      }
+      return;
+    }
   }
 }
 
@@ -383,13 +413,20 @@ function test() {
   let s;
   if (!pc)
      s = require("Storage").read("delme.png");
-  else
-    s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
+  else {
+    if (0)
+      s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
+    else if (0)
+      s = require("fs").readFile("/usr/share/eom/icons/hicolor/48x48/actions/slideshow-play.png");
+    else
+      s = require("fs").readFile("/fast/pavel/Maps/OSM/10/576/331.png")
+  }
   const a = new Uint8Array(s.length);
   for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
   print("De-png");
   const png = new PNG(a.buffer);
-  png.draw(g, 0, 0, 4);
+  png.draw(g, 0, 0, 1);
+  print("Done")
 }
 
 setTimeout(test, 1000);
