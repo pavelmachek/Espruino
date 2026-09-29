@@ -106,6 +106,7 @@ class PNG {
       const type = this.readString(4);
       const data = this.readBytes(len);
       this.readU32BE();
+      print("Have type", type);
       if (type === "IHDR") this.parseIHDR(data);
       else if (type === "PLTE") this.parsePLTE(data);
       else if (type === "IDAT") this.idat.push(data);
@@ -121,6 +122,7 @@ class PNG {
     this.compression = d[10];
     this.filter = d[11];
     this.interlace = d[12];
+    print("Have header:", this.width, "x", this.height, "depth", this.bitDepth);
   }
 
   parsePLTE(d) {
@@ -155,7 +157,9 @@ class PNG {
         if (((len ^ 0xFFFF) & 0xFFFF) !== nlen) throw new Error("Stored block length mismatch");
         for (let i = 0; i < len; i++) out.push(zbytes[br.pos++]);
       } else if (btype === 1 || btype === 2) {
-        const { litLen, dist } = PNG.buildHuffmanTables(btype, br, zbytes);
+        const v = PNG.buildHuffmanTables(btype, br, zbytes);
+        const litLen = v.litLen;
+        const dist = v.dist;
         while (true) {
           const sym = litLen.decode(br);
           if (sym < 256) {
@@ -282,6 +286,7 @@ class PNG {
       const f = raw[ip++];
       for (let x = 0; x < stride; x++) {
         const cur = raw[ip++];
+        //print(cur);
         const left = x >= bpp ? out[op + x - bpp] : 0;
         const up = y ? out[op + x - stride] : 0;
         const upLeft = (y && x >= bpp) ? out[op + x - stride - bpp] : 0;
@@ -290,7 +295,10 @@ class PNG {
         else if (f === 2) v = (cur + up) & 255;
         else if (f === 3) v = (cur + ((left + up) >> 1)) & 255;
         else if (f === 4) v = (cur + this.paeth(left, up, upLeft)) & 255;
-        else if (f !== 0) throw new Error("Bad filter");
+        else if (f !== 0) {
+          print("Filter: ", f);
+          throw new Error("Bad filter");
+        }
         out[op + x] = v;
       }
       op += stride;
@@ -321,8 +329,26 @@ class PNG {
     else if (this.colorType === 2) bpp = 3;
     else throw new Error("Only indexed or truecolor PNG supported");
 
-    const px = this.unfilter(raw, bpp);
+    print("colortype", this.colorType);
+    print("Palette:", this.palette);
+    print("Raw:", raw.length);
+
+    px = raw;
+    //const px = this.unfilter(raw, bpp);
     const out = [];
+
+    if (1) {
+      let i = 0
+    for (let yy = 0; yy < this.height; yy++) {
+      for (let xx = 0; xx < this.width; xx++) {
+        
+        const c = this.palette[px[i >> 1] & 0x0f] || [0, 0, 0];
+        out.push(this.toBangleColor(c[0], c[1], c[2]));
+        i++;
+      }
+      }
+      return out;
+    }
 
     if (this.colorType === 3) {
       for (let i = 0; i < px.length; i++) {
@@ -342,18 +368,28 @@ class PNG {
     let i = 0;
     for (let yy = 0; yy < this.height; yy++) {
       for (let xx = 0; xx < this.width; xx++) {
-        g.setColor(pixels[i++]);
+        //g.setColor(pixels[i++]);
+        if (pixels[i])
+          g.setColor(0,0,0);
+        else
+          g.setColor(1,1,1);
         g.fillRect(x + xx, y + yy, x + xx, y + yy);
+        i++;
       }
     }
     g.flip();
   }
 }
 
+function test() {
 // Usage:
-// const s = require("Storage").read("pic.png");
-// const a = new Uint8Array(s.length);
-// for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
-// const png = new PNG(a.buffer);
-// png.draw(0, 0);
+  // const s = require("Storage").read("pic.png");
+  const s = require("fs").readFile("/fast/pavel/g/tui/bwatch/apps/tetris/tetris.png");
+  const a = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
+  const png = new PNG(a.buffer);
+  png.draw(0, 0);
+}
+
+test();
 
