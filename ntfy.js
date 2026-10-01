@@ -160,7 +160,7 @@ class Ntfy extends SecClock {
     this.url = "http://ntfy.sh/bangle/json?poll=1&since=latest";
   }
 
-  draw(text) {
+  draw_msg(text) {
     // Clear the screen
     g.reset().clear();
 
@@ -185,7 +185,7 @@ class Ntfy extends SecClock {
         // Parse the JSON response text
         let json = JSON.parse(data.resp);
         
-        this.draw(json.title + "\n" + json.message);
+        this.draw_msg(json.title + "\n" + json.message);
       })
       .catch(err => {
         console.log("Error fetching weather:", err);
@@ -195,9 +195,11 @@ class Ntfy extends SecClock {
         g.flip();
       });
   }
+
+  click_bottom_right() { this.fetch(); }
 }
 
-var clock = new SecClock();
+var clock = new Ntfy();
 
 Bangle.on('touch', (button, xy) => clock.on_touch(button, xy));
 Bangle.on('lock', () => clock.on_lock());
@@ -208,9 +210,5 @@ Bangle.drawWidgets();
 }
 
 clock.draw();
-
-ntfy = new Ntfy();
-// Run immediately on boot / upload
-ntfy.fetch();
-
+//clock.fetch();
 
