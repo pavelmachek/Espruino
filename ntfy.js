@@ -135,6 +135,7 @@ class SecClock {
   }
   click_bottom_right() {}
   on_touch(button, xy) {
+    print("On touch");
     let yLimit = g.getHeight() / 2; // Bottom active zone
     if (xy.y > yLimit) {
       if (xy.x < g.getWidth() / 2) {
@@ -158,6 +159,14 @@ class Ntfy extends SecClock {
   constructor() {
     super();
     this.url = "http://ntfy.sh/bangle/json?poll=1&since=latest";
+    this.text = "Startup";
+  }
+
+  get_extra() {
+    let bat = E.getBattery();
+    if (bat < 30)
+      return "BAT\n" + this.text; 
+    return "" + this.text;
   }
 
   draw_msg(text) {
@@ -167,17 +176,14 @@ class Ntfy extends SecClock {
     g.setFont("Vector", 36);
     g.setFontAlign(0, 0); // Center horizontally & vertically
     g.drawString(text, g.getWidth()/2, 20);
+    this.text = text;
 
     // Refresh screen (for Bangle.js 2 memory-LCD)
     g.flip();
   }
 
   fetch() {
-    g.clear();
-    g.setFont("Vector", 24);
-    g.setFontAlign(0, 0);
-    g.drawString("Loading...", g.getWidth()/2, g.getHeight()/2);
-    g.flip();
+    this.draw_msg("Loading...");
 
     // Use Bangle.http to offload the request via the connected phone
     Bangle.http(this.url, { method: "GET" })

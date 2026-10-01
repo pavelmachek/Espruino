@@ -160,7 +160,8 @@ if (use_sdl) {
   initDirect();
 }
 
-function backdoor(x, y) { return peek8(x); }
+// Hmm. Enable this for keyboard support, but it break mouse support
+function backdoor(x, y) { /* return peek8(x); */ }
 //function backdoor(x, y) { return g.getPixel(x, 0); }
 
 function sdl_drag(is_down) {
