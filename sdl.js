@@ -137,6 +137,7 @@ Bangle.isCompassOn = function () { return false; }
 Bangle.setCompassPower = function (v) {}
 Bangle.getAccel = function (v) { return emulate_accel(); }
 Bangle.on = bangle_on;
+Bangle.buzz = function (v) { print("Buzz requested"); }
 Bangle.getGPSFix = function () { return emulate_gps(); }
 Bangle.getCompass = function () { return emulate_mag(); }
 Bangle.isLocked = function() { return false; }

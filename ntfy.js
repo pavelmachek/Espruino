@@ -160,6 +160,7 @@ class Ntfy extends SecClock {
     super();
     this.url = "http://ntfy.sh/bangle/json?poll=1&since=latest";
     this.text = "Startup";
+    this.busy = 0;
   }
 
   get_extra() {
@@ -175,29 +176,37 @@ class Ntfy extends SecClock {
 
     g.setFont("Vector", 36);
     g.setFontAlign(0, 0); // Center horizontally & vertically
-    g.drawString(text, g.getWidth()/2, 20);
+    g.drawString(text, g.getWidth()/2, g.getHeight()/2);
     this.text = text;
 
-    // Refresh screen (for Bangle.js 2 memory-LCD)
     g.flip();
   }
 
   fetch() {
+    if (this.busy)
+      return;
+    this.busy = 1;
     this.draw_msg("Loading...");
 
     // Use Bangle.http to offload the request via the connected phone
     Bangle.http(this.url, { method: "GET" })
       .then(data => {
+        if (data.resp == "") {
+          this.draw_msg("(nothing");
+          this.busy = 0;
+        }
+          
+        print("http success ---------------------------------------------------------- ");
+        print(data);
         // Parse the JSON response text
         let json = JSON.parse(data.resp);
         
         this.draw_msg(json.title + "\n" + json.message);
+        this.busy = 0;
       })
       .catch(err => {
-        console.log("Error fetching weather:", err);
-        g.reset().clear();
-        g.setFont("Vector", 24);
-        g.drawString("Fetch Failed!\nCheck phone\nlink.", 10, g.getHeight()/2);
+        console.log("http error:", err);
+        this.draw_msg("Fetch Failed!\nCheck phone\nlink.");
         g.flip();
       });
   }
@@ -216,5 +225,5 @@ Bangle.drawWidgets();
 }
 
 clock.draw();
-//clock.fetch();
+clock.fetch();
 
