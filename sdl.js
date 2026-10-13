@@ -236,7 +236,7 @@ function sdl_poll() {
 
 // Sensors handling ------------------------------------------------------------------------------
 
-const fs = require('fs');
+const __sdl_fs = require('fs');
 
 const IIO_BASE = '/sys/bus/iio/devices';
 const SAMPLE_INTERVAL_MS = 40;
@@ -244,7 +244,7 @@ const SAMPLE_INTERVAL_MS = 40;
 // --- Utility functions ---
 function readFloatFile(filePath) {
   try {
-    const s = fs.readFileSync(filePath, 'utf8').trim();
+    const s = __sdl_fs.readFileSync(filePath, 'utf8').trim();
     return parseFloat(s);
   } catch (_) {
     return NaN;
@@ -254,7 +254,7 @@ function readFloatFile(filePath) {
 function path_join(a, b) { return a + '/' + b; }
 
 function listIIODeviceDirs() {
-  d = fs.readdirSync(IIO_BASE);
+  d = __sdl_fs.readdirSync(IIO_BASE);
   if (!d)
     return {};
   return d.filter(f => f.startsWith('iio:device'))
@@ -465,17 +465,17 @@ function gps_parse(v) {
 }
 
 function test_read() {
-    var fd = fs.open("data.bin", "r");
+    var fd = __sdl_fs.open("data.bin", "r");
     var buf = new Uint8Array(1);
     for (let i=0; i<100; i++) {
-    fs.readSync(fd, buf, 0, 1, 0);
+    __sdl_fs.readSync(fd, buf, 0, 1, 0);
     print("Byte value:", buf[0]);
-	fs.closeSync(fd);
+	__sdl_fs.closeSync(fd);
     }
 }
 
 function emulate_gps() {
-    s = fs.readFileSync("/tmp/delme.gnss", 'utf8');
+    s = __sdl_fs.readFileSync("/tmp/delme.gnss", 'utf8');
     return gps_parse(s);
 }
 
