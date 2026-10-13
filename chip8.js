@@ -178,7 +178,7 @@ let CHIP8 = {
         // Scale up for Bangle.js 2 screen (which is usually 160x160)
         let x = i % 64;
         let y = Math.floor(i / 64);
-        g.fillRect(x * 2, y * 2, 2, 2);
+        g.fillRect(x * 2, y * 2, x * 2 + 1, y * 2 + 1);
       }
     }
     g.flip();
@@ -198,7 +198,7 @@ const romPath = "default.ch8";
 if (CHIP8.loadROMFromFile(romPath)) {
   // 3. Start the emulation loop only if load was successful
   setInterval(() => {
-    for(let i=0; i<10; i++) CHIP8.step();
+    for(let i=0; i<1; i++) CHIP8.step();
     CHIP8.render();
     
     // Handle timers (60Hz)
