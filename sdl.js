@@ -155,7 +155,8 @@ if (use_sdl) {
   //initWindow(1024, 768);
   //initWindow(240, 240);
   //initWindow(360, 660);
-  initWindow(176, 176);
+  //initWindow(176, 176);
+  initWindow(240, 320);
 } else {
   initInput();
   initDirect();
