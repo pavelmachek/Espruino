@@ -9,6 +9,7 @@ Bangle.js2, give me simple, black & white drawing application. Should allow brus
 
 var W = g.getWidth();
 var H = g.getHeight();
+var WIDGETS = 24;
 var TOOLBAR = 50;
 var color = 0;
 var brush = 2;
@@ -25,10 +26,12 @@ function white() {
 
 function toolbar() {
   white();
-  g.fillRect(0, 24, W, TOOLBAR);
+  g.fillRect(0, WIDGETS, W, TOOLBAR);
 
   black();
   g.drawLine(0, TOOLBAR, W, TOOLBAR);
+
+  g.setFont("Vector", (TOOLBAR - WIDGETS) * 0.5);
 
   // Black brush
   g.fillRect(5, 29, 40, 46);
@@ -57,7 +60,7 @@ function clearCanvas() {
 }
 
 function drawPoint(x, y, px, py) {
-  g.setColor(color);
+  g.setColor(color, color, color);
   //g.setLineWidth(brushes[brush - 1]);
 
   if (px !== undefined) {
@@ -69,20 +72,23 @@ function drawPoint(x, y, px, py) {
 
 function redraw() {
   toolbar();
-  g.flip();
 }
 
 function touch(e) {
-  if (e.y < 24 || e.y > TOOLBAR) return;
+  if (e.y < WIDGETS || e.y > TOOLBAR) return;
 
   if (e.x < 46) {
+    print("Draw");
     color = 0;
   } else if (e.x < 87) {
+    print("Erase");
     color = 1;
   } else if (e.x < 134) {
     brush++;
     if (brush > 3) brush = 1;
+    print("Brush", brush);
   } else {
+    print("Clear");
     clearCanvas();
   }
 
@@ -101,7 +107,6 @@ function drag(e) {
         last ? last.y : undefined);
 
       last = {x:x, y:y};
-      g.flip();
     } else touch(e);
   } else {
     last = null;
@@ -114,7 +119,6 @@ clearCanvas();
 Bangle.loadWidgets();
 Bangle.drawWidgets();
 toolbar();
-g.flip();
 
 Bangle.setUI({
   mode: "custom",
