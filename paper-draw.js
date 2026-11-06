@@ -7,7 +7,8 @@ Bangle.js2, give me simple, black & white drawing application. Should allow brus
 
 */
 
-var W = 176;
+var W = g.getWidth();
+var H = g.getHeight();
 var TOOLBAR = 50;
 var color = 0;
 var brush = 2;
@@ -52,7 +53,7 @@ function toolbar() {
 
 function clearCanvas() {
   white();
-  g.fillRect(0, 51, W - 1, 175);
+  g.fillRect(0, 51, W - 1, H - 1);
 }
 
 function drawPoint(x, y, px, py) {
@@ -71,7 +72,7 @@ function redraw() {
   g.flip();
 }
 
-function touch(n, e) {
+function touch(e) {
   if (e.y < 24 || e.y > TOOLBAR) return;
 
   if (e.x < 46) {
@@ -92,8 +93,8 @@ function touch(n, e) {
 function drag(e) {
   if (e.b) {
     if (e.y > TOOLBAR) {
-      var y = Math.min(175, e.y);
-      var x = Math.min(175, Math.max(0, e.x));
+      var y = e.y;
+      var x = e.x;
 
       drawPoint(x, y,
         last ? last.x : undefined,
@@ -101,7 +102,7 @@ function drag(e) {
 
       last = {x:x, y:y};
       g.flip();
-    }
+    } else touch(e);
   } else {
     last = null;
   }
@@ -120,7 +121,6 @@ Bangle.setUI({
   back: function() {
     load();
   },
-  touch: touch,
   drag: drag
 });
 
