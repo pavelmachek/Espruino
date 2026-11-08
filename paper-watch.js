@@ -37,7 +37,7 @@ var watch = {
 
         this.height = this.width;
       this.fontSize = this.height * 0.70;
-      this.circleSize = 3;
+      this.circleSize = this.width / 20;
 
         this.timer = setInterval(function() {
             self.battery = E.getBattery();
