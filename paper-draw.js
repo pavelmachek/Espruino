@@ -121,6 +121,9 @@ if (1) {
   Bangle.drawWidgets();
   toolbar();
 
+  Bangle.on('drag', drag);
+
+  if (0)
   Bangle.setUI({
     mode: "custom",
     back: function() {

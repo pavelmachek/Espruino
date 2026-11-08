@@ -127,7 +127,7 @@ function BangleHttp(url) {
 }
 
 Bangle = {};
-Bangle.setGPSPower = function () { print("setGPSpower) not implemented"); };
+Bangle.setGPSPower = function () { print("setGPSpower() not implemented"); };
 Bangle.loadWidgets = function () { };
 Bangle.drawWidgets = function () { };
 Bangle.setUI =  bangle_setUI;
