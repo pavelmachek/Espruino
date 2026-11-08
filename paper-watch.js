@@ -1,0 +1,171 @@
+#!bin/espruino
+
+eval(require("fs").readFile("sdl.js"));
+
+var watch = {
+    // Configuration
+    x: 88,
+    y: 88,
+    width: 100,
+    height: 100,
+
+    indicatorOffset: 25,
+    indicatorTop: 20,
+    indicatorBottom: 20,
+
+    font: "Vector",
+    fontSize: 48,
+    minuteFontSize: 18,
+
+    battery: 0,
+    signal: -100,
+    timer: undefined,
+
+    init: function() {
+        var self = this;
+
+        this.timer = setInterval(function() {
+            self.battery = E.getBattery();
+            self.signal = -50;
+            self.draw();
+        }, 1000);
+
+        this.draw();
+    },
+
+    draw: function() {
+        var now = new Date();
+
+        var hour = now.getHours();
+        var minute = now.getMinutes();
+
+        var x = this.x;
+        var y = this.y;
+
+        var left = x - this.width / 2;
+        var right = x + this.width / 2;
+        var top = y - this.height / 2;
+        var bottom = y + this.height / 2;
+
+        g.reset();
+        g.setColor(0, 0, 0);
+        g.fillRect(0, 0, g.getWidth(), g.getHeight());
+
+        g.setColor(1, 1, 1);
+
+        // Main rectangle
+        g.drawRect(left, top, right, bottom);
+
+        // Hour
+        g.setFont(this.font, this.fontSize);
+        g.setFontAlign(0, 0);
+        g.drawString(hour.toString(), x, y - 10);
+
+        // Minute indicator square
+        var mx1 = left + this.indicatorOffset;
+        var mx2 = right - this.indicatorOffset;
+        var my1 = bottom - this.indicatorBottom;
+        var my2 = bottom + this.indicatorTop;
+
+        this.drawMinutes(mx1, my1, mx2, my2, minute);
+
+        // Minute text
+        g.setFont(this.font, this.minuteFontSize);
+        g.drawString(
+            ("0" + minute).slice(-2),
+            x,
+            (my1 + my2) / 2
+        );
+
+        // Signal indicator
+        this.drawIndicator(
+            left - 12,
+            this.signalLevel()
+        );
+
+        // Battery indicator
+        this.drawIndicator(
+            right + 12,
+            this.battery
+        );
+    },
+
+    // Draw minute progress clockwise
+    // Starts at the center of the top edge
+    drawMinutes: function(x1, y1, x2, y2, minute) {
+        var width = x2 - x1;
+        var height = y2 - y1;
+
+        var perimeter = 2 * (width + height);
+        var length = (minute / 60) * perimeter;
+
+        var cx = (x1 + x2) / 2;
+
+        // At zero minutes: just a dot
+        if (minute === 0) {
+            g.fillCircle(cx, y1, 2);
+            return;
+        }
+
+        // Clockwise path starting at top center
+        var segments = [
+            [cx, y1, x2, y1],
+            [x2, y1, x2, y2],
+            [x2, y2, x1, y2],
+            [x1, y2, x1, y1],
+            [x1, y1, cx, y1]
+        ];
+
+        var lengths = [
+            width / 2,
+            height,
+            width,
+            height,
+            width / 2
+        ];
+
+        for (var i = 0; i < segments.length; i++) {
+            var s = segments[i];
+            var segmentLength = lengths[i];
+
+            if (length <= 0)
+                break;
+
+            var fraction = Math.min(1, length / segmentLength);
+
+            g.drawLine(
+                s[0],
+                s[1],
+                s[0] + (s[2] - s[0]) * fraction,
+                s[1] + (s[3] - s[1]) * fraction
+            );
+
+            length -= segmentLength;
+        }
+    },
+
+    // Convert RSSI to percentage
+    signalLevel: function() {
+        var level = (this.signal + 100) * 100 / 60;
+        return Math.max(0, Math.min(100, level));
+    },
+
+    // Vertical indicator
+    drawIndicator: function(x, level) {
+        var top = this.y - this.height / 2;
+        var bottom = this.y + this.height / 2;
+
+        var y = bottom - (level / 100) * (bottom - top);
+
+        g.drawLine(x, top, x, bottom);
+        g.fillCircle(x, y, 3);
+    },
+
+    stop: function() {
+        if (this.timer)
+            clearInterval(this.timer);
+    }
+};
+
+// Start
+watch.init();
