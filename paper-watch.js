@@ -7,15 +7,9 @@ var watch = {
     x: 88,
     y: 88,
     width: 100,
-    height: 100,
-
-    indicatorOffset: 25,
-    indicatorTop: 20,
-    indicatorBottom: 20,
 
     font: "Vector",
     fontSize: 48,
-    minuteFontSize: 18,
 
     battery: 0,
     signal: -100,
@@ -23,6 +17,9 @@ var watch = {
 
     init: function() {
         var self = this;
+
+        this.height = this.width;
+        this.fontSize = this.height * 0.8;
 
         this.timer = setInterval(function() {
             self.battery = E.getBattery();
@@ -53,29 +50,18 @@ var watch = {
 
         g.setColor(1, 1, 1);
 
-        // Main rectangle
-        g.drawRect(left, top, right, bottom);
-
         // Hour
         g.setFont(this.font, this.fontSize);
         g.setFontAlign(0, 0);
-        g.drawString(hour.toString(), x, y - 10);
+        g.drawString(hour.toString(), x, y);
 
         // Minute indicator square
-        var mx1 = left + this.indicatorOffset;
-        var mx2 = right - this.indicatorOffset;
-        var my1 = bottom - this.indicatorBottom;
-        var my2 = bottom + this.indicatorTop;
+      var mx1 = left;
+      var mx2 = right;
+      var my1 = top;
+      var my2 = bottom;
 
         this.drawMinutes(mx1, my1, mx2, my2, minute);
-
-        // Minute text
-        g.setFont(this.font, this.minuteFontSize);
-        g.drawString(
-            ("0" + minute).slice(-2),
-            x,
-            (my1 + my2) / 2
-        );
 
         // Signal indicator
         this.drawIndicator(
@@ -131,14 +117,20 @@ var watch = {
             if (length <= 0)
                 break;
 
-            var fraction = Math.min(1, length / segmentLength);
+          var len = length / segmentLength;
+            var fraction = Math.min(1, len);
+          var lx = s[0] + (s[2] - s[0]) * fraction;
+          var ly = s[1] + (s[3] - s[1]) * fraction;
 
             g.drawLine(
                 s[0],
                 s[1],
-                s[0] + (s[2] - s[0]) * fraction,
-                s[1] + (s[3] - s[1]) * fraction
+                lx,
+                ly
             );
+          if (len <= 1) {
+            g.fillCircle(lx, ly, 2);
+          }
 
             length -= segmentLength;
         }
