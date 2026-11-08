@@ -2,11 +2,28 @@
 
 eval(require("fs").readFile("sdl.js"));
 
+var ink = {
+  color: 0, /* ink color */
+  isInk: function () { return false; },
+  update: function () { },
+  setColor: function () {
+    g.setBgColor(1-this.color, 1-this.color, 1-this.color);
+    g.setColor(this.color, this.color, this.color);
+  },
+  cls: function () {
+    g.fillRect(0, 0, g.getWidth(), g.getHeight());
+    this.color = 1-this.color;
+    this.setColor();
+  }
+};
+
 var watch = {
-    // Configuration
-    x: 88,
-    y: 88,
-    width: 100,
+  // Configuration
+  // middle of the display
+    x: 50,
+    y: 50,
+  width: 70,
+  // In reality, +30 pixels horizontally, +15 vertically
 
     font: "Vector",
     fontSize: 48,
@@ -19,7 +36,8 @@ var watch = {
         var self = this;
 
         this.height = this.width;
-        this.fontSize = this.height * 0.8;
+      this.fontSize = this.height * 0.70;
+      this.circleSize = 3;
 
         this.timer = setInterval(function() {
             self.battery = E.getBattery();
@@ -44,11 +62,7 @@ var watch = {
         var top = y - this.height / 2;
         var bottom = y + this.height / 2;
 
-        g.reset();
-        g.setColor(0, 0, 0);
-        g.fillRect(0, 0, g.getWidth(), g.getHeight());
-
-        g.setColor(1, 1, 1);
+        ink.setColor();
 
         // Hour
         g.setFont(this.font, this.fontSize);
@@ -89,7 +103,7 @@ var watch = {
 
         // At zero minutes: just a dot
         if (minute === 0) {
-            g.fillCircle(cx, y1, 2);
+            g.fillCircle(cx, y1, this.circleSize);
             return;
         }
 
@@ -129,7 +143,7 @@ var watch = {
                 ly
             );
           if (len <= 1) {
-            g.fillCircle(lx, ly, 2);
+            g.fillCircle(lx, ly, this.circleSize);
           }
 
             length -= segmentLength;
@@ -150,7 +164,7 @@ var watch = {
         var y = bottom - (level / 100) * (bottom - top);
 
         g.drawLine(x, top, x, bottom);
-        g.fillCircle(x, y, 3);
+        g.fillCircle(x, y, this.circleSize);
     },
 
     stop: function() {
@@ -158,6 +172,8 @@ var watch = {
             clearInterval(this.timer);
     }
 };
+
+g.reset();
 
 // Start
 watch.init();
