@@ -4,82 +4,82 @@
 eval(require("fs").readFile("sdl.js"));
 
 var ink = {
-  color: 0, /* ink color */
-  isInk: function () { return false; },
-  update: function () { },
-  setColor: function () {
-    g.setBgColor(1-this.color, 1-this.color, 1-this.color);
-    g.setColor(this.color, this.color, this.color);
-  },
-  cls: function () {
-    g.fillRect(0, 0, g.getWidth(), g.getHeight());
-    this.color = 1-this.color;
-    this.setColor();
-  }
+    color: 0, /* ink color */
+    isInk: function () { return false; },
+    update: function () { },
+    setColor: function () {
+        g.setBgColor(1-this.color, 1-this.color, 1-this.color);
+        g.setColor(this.color, this.color, this.color);
+    },
+    cls: function () {
+        g.fillRect(0, 0, g.getWidth(), g.getHeight());
+        this.color = 1-this.color;
+        this.setColor();
+    }
 };
 
 var watch = {
-  // Configuration
-  // middle of the display
+    // Configuration
+    // middle of the display
     x: 50,
     y: 50,
-  width: 70,
-  // In reality, +30 pixels horizontally, +15 vertically
+    width: 70,
+    // In reality, +30 pixels horizontally, +15 vertically
 
     font: "Vector",
     fontSize: 48,
 
     battery: 0,
     signal: -100,
-  timer: undefined,
+    timer: undefined,
 
-  block: 0,
-  numx: 3,
-  numy: 4,
+    block: 0,
+    numx: 3,
+    numy: 4,
 
-  move: function() {
+    last_hour: -1,
+
+    move: function() {
         this.height = this.width;
-    this.fontSize = this.height * 0.70;
-    this.circleSize = this.width / 20;
-        this.draw();
-    
-  },
+        this.fontSize = this.height * 0.70;
+        this.circleSize = this.width / 20;
+    },
 
-  jump_to: function() {
-    var x = this.block % this.numx;
-    var y = Math.floor(this.block / this.numx);
+    jump_to: function() {
+        var x = this.block % this.numx;
+        var y = Math.floor(this.block / this.numx);
 
-    var w = (g.getWidth() / this.numx);
-    this.width = w - 30;
-    this.x = (x+0.5)*w;
-    this.y = (y+0.5)*w;
-    this.move();
-  },
+        var w = (g.getWidth() / this.numx);
+        this.width = w - 30;
+        this.x = (x+0.5)*w;
+        this.y = (y+0.5)*w;
+        this.move();
+    },
 
-  jump: function(sx, sy) {
-    while (1) {
-      if (this.block + 1 >= this.numx*this.numy) {
-        this.block = 0;
-        ink.cls();
-        this.jump_to();
-        return;
-      }
-      this.block += 1;
+    jump: function(sx, sy) {
+        while (1) {
+            if (this.block + 1 >= this.numx*this.numy) {
+                this.block = 0;
+                ink.cls();
+                this.jump_to();
+                return;
+            }
+            this.block += 1;
 
-      x = this.block % this.numx;
-      y = Math.floor(this.block / this.numx);
-      print("Thinking about", x, y, this.block); 
-      if (x + sx > this.numx)
-        continue;
-      if (y + sy > this.numy) {
-        this.block = 999;
-        continue;
-      }
+            x = this.block % this.numx;
+            y = Math.floor(this.block / this.numx);
+            print("Thinking about", x, y, this.block); 
+            if (x + sx > this.numx)
+                continue;
+            if (y + sy > this.numy) {
+                this.block = 999;
+                continue;
+            }
 
-      this.jump_to();
-      return;
-    }
-  },
+            this.jump_to();
+            return;
+        }
+    },
 
     init: function() {
         var self = this;
@@ -89,7 +89,6 @@ var watch = {
             self.signal = -50;
             self.draw();
         }, 1000);
-      this.move();
     },
 
     draw: function() {
@@ -97,6 +96,11 @@ var watch = {
 
         var hour = now.getHours();
         var minute = now.getMinutes();
+
+        if (hour != this.last_hour) {
+            this.jump(1,1);
+        }
+        this.last_hour = hour;
 
         var x = this.x;
         var y = this.y;
@@ -114,10 +118,10 @@ var watch = {
         g.drawString(hour.toString(), x, y);
 
         // Minute indicator square
-      var mx1 = left;
-      var mx2 = right;
-      var my1 = top;
-      var my2 = bottom;
+        var mx1 = left;
+        var mx2 = right;
+        var my1 = top;
+        var my2 = bottom;
 
         this.drawMinutes(mx1, my1, mx2, my2, minute);
 
@@ -175,10 +179,10 @@ var watch = {
             if (length <= 0)
                 break;
 
-          var len = length / segmentLength;
+            var len = length / segmentLength;
             var fraction = Math.min(1, len);
-          var lx = s[0] + (s[2] - s[0]) * fraction;
-          var ly = s[1] + (s[3] - s[1]) * fraction;
+            var lx = s[0] + (s[2] - s[0]) * fraction;
+            var ly = s[1] + (s[3] - s[1]) * fraction;
 
             g.drawLine(
                 s[0],
@@ -186,9 +190,9 @@ var watch = {
                 lx,
                 ly
             );
-          if (len <= 1) {
-            g.fillCircle(lx, ly, this.circleSize);
-          }
+            if (len <= 1) {
+                g.fillCircle(lx, ly, this.circleSize);
+            }
 
             length -= segmentLength;
         }
@@ -218,12 +222,13 @@ var watch = {
 };
 
 var phone = {
-  init: function() {
-    
-  },
+    init: function() {
+        
+    },
 };
 
 g.reset();
 
 // Start
 watch.init();
+
