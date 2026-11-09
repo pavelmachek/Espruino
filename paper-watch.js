@@ -45,6 +45,42 @@ var watch = {
     
   },
 
+  jump_to: function() {
+    var x = this.block % this.numx;
+    var y = Math.floor(this.block / this.numx);
+
+    var w = (g.getWidth() / this.numx);
+    this.width = w - 30;
+    this.x = (x+0.5)*w;
+    this.y = (y+0.5)*w;
+    this.move();
+  },
+
+  jump: function(sx, sy) {
+    while (1) {
+      if (this.block + 1 >= this.numx*this.numy) {
+        this.block = 0;
+        ink.cls();
+        this.jump_to();
+        return;
+      }
+      this.block += 1;
+
+      x = this.block % this.numx;
+      y = Math.floor(this.block / this.numx);
+      print("Thinking about", x, y, this.block); 
+      if (x + sx > this.numx)
+        continue;
+      if (y + sy > this.numy) {
+        this.block = 999;
+        continue;
+      }
+
+      this.jump_to();
+      return;
+    }
+  },
+
     init: function() {
         var self = this;
 
