@@ -21,88 +21,88 @@ var ink = {
 // Draw an envelope at (x, y), scaled to `size`.
 // Pass true for `ussd` to add a # badge.
 function drawEnvelope(x, y, size, ussd) {
-  var w = size;
-  var h = Math.round(size * 0.68);
-  var mid = Math.round(w / 2);
-  var flapY = Math.round(h * 0.48);
+    var w = size;
+    var h = Math.round(size * 0.68);
+    var mid = Math.round(w / 2);
+    var flapY = Math.round(h * 0.48);
 
-  // Envelope outline
-  g.drawRect(x, y, x + w, y + h);
+    // Envelope outline
+    g.drawRect(x, y, x + w, y + h);
 
-  // Top flap: the two lines meet at its tip
-  g.drawLine(x, y, x + mid, y + flapY);
-  g.drawLine(x + w, y, x + mid, y + flapY);
+    // Top flap: the two lines meet at its tip
+    g.drawLine(x, y, x + mid, y + flapY);
+    g.drawLine(x + w, y, x + mid, y + flapY);
 
-  if (0) {
-  // Lower folds stop short of the flap tip
-  var gap = Math.max(2, Math.round(w * 0.12));
-  g.drawLine(x, y + h, x + mid - gap, y + flapY + gap);
-  g.drawLine(x + w, y + h, x + mid + gap, y + flapY + gap);
-  }
+    if (0) {
+        // Lower folds stop short of the flap tip
+        var gap = Math.max(2, Math.round(w * 0.12));
+        g.drawLine(x, y + h, x + mid - gap, y + flapY + gap);
+        g.drawLine(x + w, y + h, x + mid + gap, y + flapY + gap);
+    }
 
-  if (ussd) {
-    // # badge at the lower-right
-    var bx = x + w - Math.round(size * 0.16);
-    var by = y + h - Math.round(size * 0.16);
-    var r = Math.max(5, Math.round(size * 0.22));
+    if (ussd) {
+        // # badge at the lower-right
+        var bx = x + w - Math.round(size * 0.16);
+        var by = y + h - Math.round(size * 0.16);
+        var r = Math.max(5, Math.round(size * 0.22));
 
-    g.fillCircle(bx, by, r);
-    g.setColor(g.theme.bg);
-    g.drawLine(bx - 2, by - 3, bx - 1, by + 3);
-    g.drawLine(bx + 2, by - 3, bx + 3, by + 3);
-    g.drawLine(bx - 4, by - 1, bx + 4, by - 1);
-    g.drawLine(bx - 4, by + 2, bx + 4, by + 2);
-    g.setColor(g.theme.fg);
-  }
+        g.fillCircle(bx, by, r);
+        g.setColor(g.theme.bg);
+        g.drawLine(bx - 2, by - 3, bx - 1, by + 3);
+        g.drawLine(bx + 2, by - 3, bx + 3, by + 3);
+        g.drawLine(bx - 4, by - 1, bx + 4, by - 1);
+        g.drawLine(bx - 4, by + 2, bx + 4, by + 2);
+        g.setColor(g.theme.fg);
+    }
 }
 
 function drawHandset(x, y, size) {
-  var s = size / 24;
-  function p(v) { return Math.round(v * s); }
+    var s = size / 24;
+    function p(v) { return Math.round(v * s); }
 
-  // Receiver silhouette, traced around its outside and back along its inside
-  var points = [
-    [5, 3], [3, 4], [2, 7], [3, 11],
-    [6, 15], [10, 19], [14, 21], [18, 22],
-    [21, 20], [22, 18], [19, 14], [16, 15],
-    [14, 17], [11, 16], [8, 13], [7, 10],
-    [9, 8], [8, 5]
-  ];
+    // Receiver silhouette, traced around its outside and back along its inside
+    var points = [
+        [5, 3], [3, 4], [2, 7], [3, 11],
+        [6, 15], [10, 19], [14, 21], [18, 22],
+        [21, 20], [22, 18], [19, 14], [16, 15],
+        [14, 17], [11, 16], [8, 13], [7, 10],
+        [9, 8], [8, 5]
+    ];
 
-  var polygon = [];
-  for (var i = 0; i < points.length; i++) {
-    polygon.push(x + p(points[i][0]), y + p(points[i][1]));
-  }
+    var polygon = [];
+    for (var i = 0; i < points.length; i++) {
+        polygon.push(x + p(points[i][0]), y + p(points[i][1]));
+    }
 
-  g.fillPoly(polygon);
+    g.fillPoly(polygon);
 }
 
 function drawWatch(x, y, width, now, signalLevel, battery) {
-        var hour = now.getHours();
+    var hour = now.getHours();
     var minute = now.getMinutes();
 
     var height = width;
     var circleSize = width / 20;
 
-        var left = x - width / 2;
-        var right = x + width / 2;
-        var top = y - height / 2;
-        var bottom = y + height / 2;
+    var left = x - width / 2;
+    var right = x + width / 2;
+    var top = y - height / 2;
+    var bottom = y + height / 2;
 
-        ink.setColor();
+    ink.setColor();
 
-        // Hour
-        g.setFont("Vector", height * 0.70);
-        g.setFontAlign(0, 0);
-        g.drawString(hour.toString(), x, y);
+    // Hour
+    g.setFont("Vector", height * 0.70);
+    g.setFontAlign(0, 0);
+    g.drawString(hour.toString(), x, y);
 
-        // Minute indicator square
-        var mx1 = left;
-        var mx2 = right;
-        var my1 = top;
+    // Minute indicator square
+    var mx1 = left;
+    var mx2 = right;
+    var my1 = top;
     var my2 = bottom;
 
-        // Draw minute progress clockwise
+    // Draw minute progress clockwise
     // Starts at the center of the top edge
     function drawMinutes(x1, y1, x2, y2, minute) {
         var width = x2 - x1;
@@ -173,19 +173,19 @@ function drawWatch(x, y, width, now, signalLevel, battery) {
         g.fillCircle(x, y, circleSize);
     }
     
-        drawMinutes(mx1, my1, mx2, my2, minute);
+    drawMinutes(mx1, my1, mx2, my2, minute);
 
-        // Signal indicator
-        drawIndicator(
-            left - 12,
-            signalLevel
-        );
+    // Signal indicator
+    drawIndicator(
+        left - 12,
+        signalLevel
+    );
 
-        // Battery indicator
-        drawIndicator(
-            right + 12,
-            battery
-        );
+    // Battery indicator
+    drawIndicator(
+        right + 12,
+        battery
+    );
 }
 
 var watch = {
