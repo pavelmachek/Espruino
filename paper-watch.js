@@ -1,4 +1,5 @@
 #!bin/espruino
+/* -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil; -*- */
 
 eval(require("fs").readFile("sdl.js"));
 
@@ -30,22 +31,29 @@ var watch = {
 
     battery: 0,
     signal: -100,
-    timer: undefined,
+  timer: undefined,
+
+  block: 0,
+  numx: 3,
+  numy: 4,
+
+  move: function() {
+        this.height = this.width;
+    this.fontSize = this.height * 0.70;
+    this.circleSize = this.width / 20;
+        this.draw();
+    
+  },
 
     init: function() {
         var self = this;
-
-        this.height = this.width;
-      this.fontSize = this.height * 0.70;
-      this.circleSize = this.width / 20;
 
         this.timer = setInterval(function() {
             self.battery = E.getBattery();
             self.signal = -50;
             self.draw();
         }, 1000);
-
-        this.draw();
+      this.move();
     },
 
     draw: function() {
@@ -171,6 +179,12 @@ var watch = {
         if (this.timer)
             clearInterval(this.timer);
     }
+};
+
+var phone = {
+  init: function() {
+    
+  },
 };
 
 g.reset();
