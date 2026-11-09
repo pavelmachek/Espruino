@@ -190,14 +190,7 @@ function drawWatch(x, y, width, now, signalLevel, battery) {
 
 var watch = {
     // Configuration
-    // middle of the display
-    x: 50,
-    y: 50,
-    width: 70,
     // In reality, +30 pixels horizontally, +15 vertically
-
-    font: "Vector",
-    fontSize: 48,
 
     battery: 0,
     signal: -100,
@@ -293,7 +286,6 @@ var watch = {
 
         drawWatch(this.x, this.y, this.width, now, this.signalLevel(), this.battery);
     },
-
 
     // Convert RSSI to percentage
     signalLevel: function() {
