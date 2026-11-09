@@ -21,7 +21,7 @@ var ink = {
 // Draw an envelope at (x, y), scaled to `size`.
 // Pass true for `ussd` to add a # badge.
 
-function drawEnvelope(g, x, y, size, ussd) {
+function drawEnvelope(x, y, size, ussd) {
   var w = size;
   var h = Math.round(size * 0.68);
   var mid = Math.round(w / 2);
@@ -57,7 +57,7 @@ function drawEnvelope(g, x, y, size, ussd) {
   }
 }
 
-function drawHandset(g, x, y, size) {
+function drawHandset(x, y, size) {
   var s = size / 24;
   function p(v) { return Math.round(v * s); }
 
@@ -150,13 +150,13 @@ var watch = {
 
     newSms: function() {
         this.jump(1, 1);
-        drawEnvelope(g, this.base_x, this.base_y, this.size, false);
+        drawEnvelope(this.base_x, this.base_y, this.size, false);
         this.jump(1, 1);
     },
 
     newCall: function() {
         this.jump(1, 1);
-        drawHandset(g, this.base_x, this.base_y, this.size);
+        drawHandset(this.base_x, this.base_y, this.size);
         this.jump(1, 1);
     },
 
