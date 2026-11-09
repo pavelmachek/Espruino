@@ -20,7 +20,6 @@ var ink = {
 
 // Draw an envelope at (x, y), scaled to `size`.
 // Pass true for `ussd` to add a # badge.
-
 function drawEnvelope(x, y, size, ussd) {
   var w = size;
   var h = Math.round(size * 0.68);
@@ -76,6 +75,117 @@ function drawHandset(x, y, size) {
   }
 
   g.fillPoly(polygon);
+}
+
+function drawWatch(x, y, width, now, signalLevel, battery) {
+        var hour = now.getHours();
+    var minute = now.getMinutes();
+
+    var height = width;
+    var circleSize = width / 20;
+
+        var left = x - width / 2;
+        var right = x + width / 2;
+        var top = y - height / 2;
+        var bottom = y + height / 2;
+
+        ink.setColor();
+
+        // Hour
+        g.setFont("Vector", height * 0.70);
+        g.setFontAlign(0, 0);
+        g.drawString(hour.toString(), x, y);
+
+        // Minute indicator square
+        var mx1 = left;
+        var mx2 = right;
+        var my1 = top;
+    var my2 = bottom;
+
+        // Draw minute progress clockwise
+    // Starts at the center of the top edge
+    function drawMinutes(x1, y1, x2, y2, minute) {
+        var width = x2 - x1;
+        var height = y2 - y1;
+
+        var perimeter = 2 * (width + height);
+        var length = (minute / 60) * perimeter;
+
+        var cx = (x1 + x2) / 2;
+
+        // At zero minutes: just a dot
+        if (minute === 0) {
+            g.fillCircle(cx, y1, circleSize);
+            return;
+        }
+
+        // Clockwise path starting at top center
+        var segments = [
+            [cx, y1, x2, y1],
+            [x2, y1, x2, y2],
+            [x2, y2, x1, y2],
+            [x1, y2, x1, y1],
+            [x1, y1, cx, y1]
+        ];
+
+        var lengths = [
+            width / 2,
+            height,
+            width,
+            height,
+            width / 2
+        ];
+
+        for (var i = 0; i < segments.length; i++) {
+            var s = segments[i];
+            var segmentLength = lengths[i];
+
+            if (length <= 0)
+                break;
+
+            var len = length / segmentLength;
+            var fraction = Math.min(1, len);
+            var lx = s[0] + (s[2] - s[0]) * fraction;
+            var ly = s[1] + (s[3] - s[1]) * fraction;
+
+            g.drawLine(
+                s[0],
+                s[1],
+                lx,
+                ly
+            );
+            if (len <= 1) {
+                g.fillCircle(lx, ly, circleSize);
+            }
+
+            length -= segmentLength;
+        }
+    }
+
+    // Vertical indicator
+    function drawIndicator(x, level) {
+        var top = y - height / 2;
+        var bottom = y + height / 2;
+
+        var y = bottom - (level / 100) * (bottom - top);
+
+        g.drawLine(x, top, x, bottom);
+        g.fillCircle(x, y, circleSize);
+    }
+    
+        drawMinutes(mx1, my1, mx2, my2, minute);
+
+        // Signal indicator
+        drawIndicator(
+            left - 12,
+            signalLevel
+        );
+
+        // Battery indicator
+        drawIndicator(
+            right + 12,
+            battery
+        );
 }
 
 var watch = {
@@ -181,117 +291,14 @@ var watch = {
         }
         this.last_hour = hour;
 
-        var x = this.x;
-        var y = this.y;
-
-        var left = x - this.width / 2;
-        var right = x + this.width / 2;
-        var top = y - this.height / 2;
-        var bottom = y + this.height / 2;
-
-        ink.setColor();
-
-        // Hour
-        g.setFont(this.font, this.fontSize);
-        g.setFontAlign(0, 0);
-        g.drawString(hour.toString(), x, y);
-
-        // Minute indicator square
-        var mx1 = left;
-        var mx2 = right;
-        var my1 = top;
-        var my2 = bottom;
-
-        this.drawMinutes(mx1, my1, mx2, my2, minute);
-
-        // Signal indicator
-        this.drawIndicator(
-            left - 12,
-            this.signalLevel()
-        );
-
-        // Battery indicator
-        this.drawIndicator(
-            right + 12,
-            this.battery
-        );
+        drawWatch(this.x, this.y, this.width, now, this.signalLevel(), this.battery);
     },
 
-    // Draw minute progress clockwise
-    // Starts at the center of the top edge
-    drawMinutes: function(x1, y1, x2, y2, minute) {
-        var width = x2 - x1;
-        var height = y2 - y1;
-
-        var perimeter = 2 * (width + height);
-        var length = (minute / 60) * perimeter;
-
-        var cx = (x1 + x2) / 2;
-
-        // At zero minutes: just a dot
-        if (minute === 0) {
-            g.fillCircle(cx, y1, this.circleSize);
-            return;
-        }
-
-        // Clockwise path starting at top center
-        var segments = [
-            [cx, y1, x2, y1],
-            [x2, y1, x2, y2],
-            [x2, y2, x1, y2],
-            [x1, y2, x1, y1],
-            [x1, y1, cx, y1]
-        ];
-
-        var lengths = [
-            width / 2,
-            height,
-            width,
-            height,
-            width / 2
-        ];
-
-        for (var i = 0; i < segments.length; i++) {
-            var s = segments[i];
-            var segmentLength = lengths[i];
-
-            if (length <= 0)
-                break;
-
-            var len = length / segmentLength;
-            var fraction = Math.min(1, len);
-            var lx = s[0] + (s[2] - s[0]) * fraction;
-            var ly = s[1] + (s[3] - s[1]) * fraction;
-
-            g.drawLine(
-                s[0],
-                s[1],
-                lx,
-                ly
-            );
-            if (len <= 1) {
-                g.fillCircle(lx, ly, this.circleSize);
-            }
-
-            length -= segmentLength;
-        }
-    },
 
     // Convert RSSI to percentage
     signalLevel: function() {
         var level = (this.signal + 100) * 100 / 60;
         return Math.max(0, Math.min(100, level));
-    },
-
-    // Vertical indicator
-    drawIndicator: function(x, level) {
-        var top = this.y - this.height / 2;
-        var bottom = this.y + this.height / 2;
-
-        var y = bottom - (level / 100) * (bottom - top);
-
-        g.drawLine(x, top, x, bottom);
-        g.fillCircle(x, y, this.circleSize);
     },
 
     stop: function() {
